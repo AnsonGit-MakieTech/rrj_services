@@ -285,6 +285,14 @@ def home(request):
     )
 
 
+def login_page(request):
+    return render(request, "base/login.html")
+
+
+def register_page(request):
+    return render(request, "base/register.html")
+
+
 def services(request):
     return render(
         request,

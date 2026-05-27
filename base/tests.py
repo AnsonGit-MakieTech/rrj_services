@@ -16,6 +16,29 @@ class HomePageTests(TestCase):
         self.assertContains(response, 'alt="Condo Renovation"')
 
 
+class AuthenticationPageTests(TestCase):
+    def test_login_page_uses_name_and_contact_number_fields(self):
+        response = self.client.get(reverse("login"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Login to your account")
+        self.assertContains(response, 'name="full_name"')
+        self.assertContains(response, 'name="contact_number"')
+        self.assertNotContains(response, 'type="password"')
+        self.assertContains(response, reverse("register"))
+
+    def test_register_page_uses_name_and_contact_number_fields(self):
+        response = self.client.get(reverse("register"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Create an account")
+        self.assertContains(response, 'name="full_name"')
+        self.assertContains(response, 'name="contact_number"')
+        self.assertNotContains(response, 'type="password"')
+        self.assertContains(response, reverse("login"))
+        self.assertContains(response, "assets/rrj-logo.png")
+
+
 class ServicesPageTests(TestCase):
     def test_services_page_renders_full_catalog(self):
         response = self.client.get(reverse("services"))

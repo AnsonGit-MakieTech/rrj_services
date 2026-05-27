@@ -1,0 +1,50 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Register | RRJ's Maintenance Services</title>
+    <meta name="description" content="Create your RRJ's Maintenance Services customer account.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+<body class="auth-page">
+    <main class="auth-shell">
+        <a class="auth-brand" href="{% url 'home' %}" aria-label="RRJ's Maintenance Services home">
+            <img src="{% static 'assets/rrj-logo.png' %}" alt="RRJ's Maintenance Services">
+        </a>
+
+        <section class="auth-card" aria-labelledby="register-title">
+            <p class="auth-kicker">New customer</p>
+            <h1 id="register-title">Create an account</h1>
+            <p class="auth-description">Book services and receive project updates using your contact number.</p>
+
+            <form class="auth-form">
+                <label class="auth-field">
+                    <span>Full Name</span>
+                    <span class="auth-control">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z"/></svg>
+                        <input type="text" name="full_name" autocomplete="name" placeholder="Enter your full name" required>
+                    </span>
+                </label>
+
+                <label class="auth-field">
+                    <span>Contact Number</span>
+                    <span class="auth-control">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l.7 3a2 2 0 0 1-.6 1.9L7.9 9.9a16 16 0 0 0 6.2 6.2l1.3-1.3a2 2 0 0 1 1.9-.6l3 .7a2 2 0 0 1 1.7 2Z"/></svg>
+                        <input type="tel" name="contact_number" autocomplete="tel" inputmode="tel" placeholder="+63 912 345 6789" required>
+                    </span>
+                </label>
+
+                <p class="auth-support">Your contact number will be used for booking updates and account verification.</p>
+                <button class="auth-submit" type="button">Register</button>
+            </form>
+
+            <p class="auth-switch">Already have an account? <a href="{% url 'login' %}">Login</a></p>
+        </section>
+    </main>
+</body>
+</html>

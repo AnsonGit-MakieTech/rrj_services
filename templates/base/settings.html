@@ -104,6 +104,19 @@
                 <span>Description</span>
                 <textarea rows="3" placeholder="Brief description of the service..."></textarea>
             </label>
+            <div class="service-cover-field" data-service-cover-field>
+                <label class="service-modal-field">
+                    <span>Cover Photo</span>
+                    <input class="service-cover-input" type="file" name="cover_photo" accept=".jpg,.jpeg,.png,.webp" data-service-cover-input>
+                </label>
+                <div class="service-cover-preview" data-service-cover-preview hidden>
+                    <img alt="Selected service cover preview" data-service-cover-image>
+                    <div>
+                        <p data-service-cover-name></p>
+                        <button type="button" data-service-cover-remove>Remove</button>
+                    </div>
+                </div>
+            </div>
             <div class="service-price-fields">
                 <label class="service-modal-field">
                     <span>Min Price (PHP)</span>
@@ -143,6 +156,19 @@
                 <span>Description</span>
                 <textarea rows="3" data-edit-service-description></textarea>
             </label>
+            <div class="service-cover-field" data-service-cover-field>
+                <label class="service-modal-field">
+                    <span>Cover Photo</span>
+                    <input class="service-cover-input" type="file" name="cover_photo" accept=".jpg,.jpeg,.png,.webp" data-service-cover-input>
+                </label>
+                <div class="service-cover-preview" data-service-cover-preview hidden>
+                    <img alt="Selected service cover preview" data-service-cover-image>
+                    <div>
+                        <p data-service-cover-name></p>
+                        <button type="button" data-service-cover-remove>Remove</button>
+                    </div>
+                </div>
+            </div>
             <div class="service-price-fields">
                 <label class="service-modal-field">
                     <span>Min Price (PHP)</span>

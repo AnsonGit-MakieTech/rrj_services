@@ -24,6 +24,7 @@
     const serviceModalOpeners = document.querySelectorAll("[data-service-modal-open]");
     const serviceModals = document.querySelectorAll("[data-service-modal]");
     const serviceModalClosers = document.querySelectorAll("[data-service-modal-close]");
+    const serviceCoverFields = document.querySelectorAll("[data-service-cover-field]");
 
     function closeAccountMenu() {
         accountToggle.setAttribute("aria-expanded", "false");
@@ -340,8 +341,59 @@
     if (serviceModals.length) {
         const editModal = document.querySelector("[data-service-modal=\"edit\"]");
 
+        function clearServiceCover(field) {
+            const input = field.querySelector("[data-service-cover-input]");
+            const preview = field.querySelector("[data-service-cover-preview]");
+            const image = field.querySelector("[data-service-cover-image]");
+            const name = field.querySelector("[data-service-cover-name]");
+
+            if (image.dataset.objectUrl) {
+                URL.revokeObjectURL(image.dataset.objectUrl);
+                delete image.dataset.objectUrl;
+            }
+
+            input.value = "";
+            image.removeAttribute("src");
+            name.textContent = "";
+            preview.hidden = true;
+        }
+
+        serviceCoverFields.forEach(function (field) {
+            const input = field.querySelector("[data-service-cover-input]");
+            const preview = field.querySelector("[data-service-cover-preview]");
+            const image = field.querySelector("[data-service-cover-image]");
+            const name = field.querySelector("[data-service-cover-name]");
+            const remove = field.querySelector("[data-service-cover-remove]");
+
+            input.addEventListener("change", function () {
+                const file = input.files[0];
+                if (!file) {
+                    clearServiceCover(field);
+                    return;
+                }
+
+                if (image.dataset.objectUrl) {
+                    URL.revokeObjectURL(image.dataset.objectUrl);
+                }
+
+                const objectUrl = URL.createObjectURL(file);
+                image.src = objectUrl;
+                image.dataset.objectUrl = objectUrl;
+                name.textContent = file.name;
+                preview.hidden = false;
+            });
+
+            remove.addEventListener("click", function () {
+                clearServiceCover(field);
+            });
+        });
+
         function closeServiceModals() {
             serviceModals.forEach(function (modal) {
+                const coverField = modal.querySelector("[data-service-cover-field]");
+                if (coverField) {
+                    clearServiceCover(coverField);
+                }
                 modal.hidden = true;
             });
             document.body.classList.remove("modal-open");

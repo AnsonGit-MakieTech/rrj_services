@@ -167,6 +167,9 @@ class ServiceSettingsPageTests(TestCase):
         self.assertContains(response, "data-service-modal=\"add\"")
         self.assertContains(response, "Add New Service")
         self.assertContains(response, "Edit Service")
+        self.assertContains(response, "Cover Photo", count=2)
+        self.assertContains(response, 'name="cover_photo"', count=2)
+        self.assertContains(response, "data-service-cover-preview", count=2)
         self.assertContains(response, "site-header-admin")
         self.assertContains(response, f'class="active" href="{reverse("service_settings")}"')
 

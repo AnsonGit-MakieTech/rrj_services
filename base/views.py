@@ -2,6 +2,9 @@ from django.http import Http404
 from django.shortcuts import render
 
 
+# Change this value to True to preview the administrator navigation.
+IS_ADMIN = True
+
 SERVICES = [
     {
         "name": "Condo Renovation",
@@ -280,6 +283,7 @@ def home(request):
         {
             "active_page": "home",
             "display_name": _display_name(request),
+            "is_admin": IS_ADMIN,
             "services": SERVICES[:8],
         },
     )
@@ -300,6 +304,7 @@ def services(request):
         {
             "active_page": "services",
             "display_name": _display_name(request),
+            "is_admin": IS_ADMIN,
             "services": SERVICES,
         },
     )
@@ -312,6 +317,7 @@ def my_bookings(request):
         {
             "active_page": "bookings",
             "display_name": _display_name(request),
+            "is_admin": IS_ADMIN,
             "bookings": _bookings_for_dashboard(),
             "booking_stats": [
                 {"label": "Total", "value": "2", "kind": "total"},
@@ -335,6 +341,7 @@ def add_booking(request):
         {
             "active_page": "",
             "display_name": _display_name(request),
+            "is_admin": IS_ADMIN,
             "services": SERVICES,
             "selected_service": selected_service,
         },
@@ -355,6 +362,7 @@ def view_booking(request, reference):
         {
             "active_page": "bookings",
             "display_name": _display_name(request),
+            "is_admin": IS_ADMIN,
             "booking": booking,
             "state": state,
             "progress_steps": _progress_steps(state),

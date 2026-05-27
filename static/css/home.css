@@ -212,6 +212,52 @@ svg {
     display: none;
 }
 
+.site-header-admin {
+    background: var(--color-brand-indigo);
+    border-bottom-color: rgba(255, 255, 255, .1);
+    box-shadow: 0 5px 20px rgba(34, 12, 71, .19);
+}
+
+.site-header-admin .brand,
+.site-header-admin .account-toggle,
+.site-header-admin .nav-toggle {
+    color: #fff;
+}
+
+.site-header-admin .desktop-nav a {
+    color: rgba(255, 255, 255, .72);
+}
+
+.site-header-admin .desktop-nav a:hover,
+.site-header-admin .desktop-nav a.active {
+    background: rgba(255, 255, 255, .15);
+    color: #fff;
+}
+
+.site-header-admin .account-label {
+    color: #fff;
+}
+
+.site-header-admin .account-toggle:hover,
+.site-header-admin .account-toggle[aria-expanded="true"] {
+    color: #f4e9ff;
+}
+
+.site-header-admin .mobile-navigation {
+    background: var(--color-brand-indigo);
+    border-top-color: rgba(255, 255, 255, .1);
+}
+
+.site-header-admin .mobile-navigation a {
+    color: rgba(255, 255, 255, .75);
+}
+
+.site-header-admin .mobile-navigation a.active,
+.site-header-admin .mobile-navigation a:hover {
+    background: rgba(255, 255, 255, .12);
+    color: #fff;
+}
+
 .hero {
     align-items: center;
     background:

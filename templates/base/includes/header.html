@@ -1,5 +1,5 @@
 {% load static %}
-<header class="site-header">
+<header class="site-header{% if is_admin %} site-header-admin{% endif %}">
     <div class="container header-inner">
         <a class="brand" href="{% url 'home' %}" aria-label="RRJ's Maintenance Services home">
             <img src="{% static 'assets/rrj-logo-icon.png' %}" alt="" class="brand-icon">
@@ -10,6 +10,10 @@
             <a {% if active_page == "home" %}class="active"{% endif %} href="{% url 'home' %}">Home</a>
             <a {% if active_page == "services" %}class="active"{% endif %} href="{% url 'services' %}">Services</a>
             <a {% if active_page == "bookings" %}class="active"{% endif %} href="{% url 'my_bookings' %}">My Bookings</a>
+            {% if is_admin %}
+            <a href="#" aria-label="Admin dashboard">Admin</a>
+            <a href="#" aria-label="Admin settings">Settings</a>
+            {% endif %}
         </nav>
 
         <div class="header-actions">
@@ -81,5 +85,15 @@
             </svg>
             My Bookings
         </a>
+        {% if is_admin %}
+        <a href="#" aria-label="Admin dashboard">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11H4Z"/><path d="M9 20v-6h6v6"/></svg>
+            Admin
+        </a>
+        <a href="#" aria-label="Admin settings">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.3a2 2 0 1 1-4 0V21a1.7 1.7 0 0 0-1.1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 1 1 4.1 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H2.7a2 2 0 1 1 0-4H3a1.7 1.7 0 0 0 1.6-1.1A1.7 1.7 0 0 0 4.3 7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h.1A1.7 1.7 0 0 0 10 3V2.7a2 2 0 1 1 4 0V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 1 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1A1.7 1.7 0 0 0 21 10h.3a2 2 0 1 1 0 4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg>
+            Settings
+        </a>
+        {% endif %}
     </nav>
 </header>

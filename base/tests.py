@@ -15,6 +15,22 @@ class HomePageTests(TestCase):
         self.assertContains(response, "images.unsplash.com")
         self.assertContains(response, 'alt="Condo Renovation"')
 
+    def test_admin_toggle_renders_admin_navigation_variant(self):
+        with patch("base.views.IS_ADMIN", True):
+            response = self.client.get(reverse("home"))
+
+        self.assertContains(response, "site-header-admin")
+        self.assertContains(response, "Admin")
+        self.assertContains(response, "Settings")
+
+    def test_customer_navigation_hides_admin_items(self):
+        with patch("base.views.IS_ADMIN", False):
+            response = self.client.get(reverse("home"))
+
+        self.assertNotContains(response, "site-header-admin")
+        self.assertNotContains(response, 'aria-label="Admin dashboard"')
+        self.assertNotContains(response, 'aria-label="Admin settings"')
+
 
 class AuthenticationPageTests(TestCase):
     def test_login_page_uses_name_and_contact_number_fields(self):

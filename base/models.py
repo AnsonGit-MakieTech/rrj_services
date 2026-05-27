@@ -63,6 +63,9 @@ class BookingRequest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    reference_number = models.CharField(max_length=255 , blank=True, null=True)
+
+
     # Customer Information
     full_name = models.CharField(max_length=255 , blank=True, null=True)
     email = models.CharField(max_length=255 , blank=True, null=True)
@@ -85,6 +88,14 @@ class BookingRequest(models.Model):
     project_location = models.TextField( blank=True, null=True)
     service_description = models.TextField( blank=True, null=True)
     problem_description = models.TextField( blank=True, null=True)
+
+    # Transaction Information
+    material_cost = models.FloatField( default=0.0)
+    labor_cost = models.FloatField( default=0.0)
+    total_cost = models.FloatField( default=0.0)
+    transaction_notes = models.TextField( blank=True, null=True)
+    
+
 
     def __str__(self):
         return f"{self.pk} - {self.full_name}"

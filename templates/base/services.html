@@ -40,7 +40,7 @@
                             <h2>{{ service.name }}</h2>
                             <p>{{ service.description }}</p>
                             <strong>{{ service.price }}</strong>
-                            <a class="service-button" href="#">
+                            <a class="service-button" href="{% url 'add_booking' %}?service={{ service.name|urlencode }}">
                                 Book Service
                                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
                             </a>

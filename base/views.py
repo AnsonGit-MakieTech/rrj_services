@@ -164,3 +164,21 @@ def my_bookings(request):
             ],
         },
     )
+
+
+def add_booking(request):
+    selected_service = request.GET.get("service", "")
+    service_names = {service["name"] for service in SERVICES}
+    if selected_service not in service_names:
+        selected_service = ""
+
+    return render(
+        request,
+        "base/add_booking.html",
+        {
+            "active_page": "",
+            "display_name": _display_name(request),
+            "services": SERVICES,
+            "selected_service": selected_service,
+        },
+    )

@@ -1,0 +1,119 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Book a Service | RRJ's Maintenance Services</title>
+    <meta name="description" content="Request a quotation for construction and maintenance work from RRJ's Maintenance Services.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <script src="{% static 'js/home.js' %}" defer></script>
+</head>
+<body>
+    {% include "base/includes/header.html" %}
+
+    <main class="add-booking-page">
+        <section class="booking-form-page">
+            <div class="form-container">
+                <div class="form-heading">
+                    <h1>Book a Service</h1>
+                    <p>Fill in the details below and we'll send you a quotation.</p>
+                </div>
+
+                <form class="booking-form">
+                    <fieldset class="form-panel">
+                        <legend>Customer Information</legend>
+                        <div class="form-grid">
+                            <label class="form-field">
+                                <span>Full Name <b>*</b></span>
+                                <input type="text" value="{{ display_name }}" required>
+                            </label>
+                            <label class="form-field">
+                                <span>Email <b>*</b></span>
+                                <input type="email" value="techmakie@gmail.com" required>
+                            </label>
+                            <label class="form-field">
+                                <span>Contact Number</span>
+                                <input type="tel">
+                            </label>
+                            <label class="form-field">
+                                <span>Full Address</span>
+                                <input type="text">
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="form-panel">
+                        <legend>Service Information</legend>
+                        <div class="form-grid">
+                            <label class="form-field">
+                                <span>Service Category <b>*</b></span>
+                                <select required>
+                                    <option value="" {% if not selected_service %}selected{% endif %}>Select service</option>
+                                    {% for service in services %}
+                                    <option value="{{ service.name }}" {% if selected_service == service.name %}selected{% endif %}>{{ service.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                            <label class="form-field">
+                                <span>Urgency Level</span>
+                                <select>
+                                    <option>Low</option>
+                                    <option selected>Medium</option>
+                                    <option>High</option>
+                                    <option>Emergency</option>
+                                </select>
+                            </label>
+                            <label class="form-field">
+                                <span>Preferred Schedule</span>
+                                <input type="date">
+                            </label>
+                            <label class="form-field">
+                                <span>Square Meters (SQM)</span>
+                                <input type="number" min="0" step="0.01">
+                            </label>
+                            <label class="form-field form-span">
+                                <span>Project Location</span>
+                                <input type="text">
+                            </label>
+                            <label class="form-field form-span">
+                                <span>Service Description</span>
+                                <textarea rows="3"></textarea>
+                            </label>
+                            <label class="form-field form-span">
+                                <span>Problem Description / Notes</span>
+                                <textarea rows="3"></textarea>
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="form-panel upload-panel">
+                        <legend>Upload Project Files</legend>
+                        <p>Upload images or videos of the project for quotation assessment.</p>
+                        <label class="file-upload">
+                            <input class="sr-only" type="file" accept=".jpg,.jpeg,.png,.mp4,.mov" multiple>
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 16V3m0 0L7 8m5-5 5 5M5 14v6h14v-6"/>
+                            </svg>
+                            <span>Click to upload (JPG, PNG, MP4, MOV)</span>
+                        </label>
+                    </fieldset>
+
+                    <button type="button" class="submit-booking">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/>
+                            <path d="m22 4-10 10.01-3-3"/>
+                        </svg>
+                        Submit Booking Request
+                    </button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    {% include "base/includes/footer.html" %}
+</body>
+</html>

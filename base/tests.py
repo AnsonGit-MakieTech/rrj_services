@@ -35,3 +35,17 @@ class MyBookingsPageTests(TestCase):
         self.assertContains(response, "New Booking")
         self.assertContains(response, "Pending Quotation", count=2)
         self.assertContains(response, "BK-MPL5LPV3")
+
+
+class AddBookingPageTests(TestCase):
+    def test_add_booking_page_renders_ui_and_selected_service(self):
+        response = self.client.get(
+            reverse("add_booking"),
+            {"service": "Condo Renovation"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Book a Service")
+        self.assertContains(response, "Customer Information")
+        self.assertContains(response, "Upload Project Files")
+        self.assertContains(response, '<option value="Condo Renovation" selected>')

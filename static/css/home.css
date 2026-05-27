@@ -888,6 +888,194 @@ svg {
     color: var(--color-brand-violet);
 }
 
+.add-booking-page {
+    background: #fcfbff;
+}
+
+.booking-form-page {
+    padding: 47px 0 126px;
+}
+
+.form-container {
+    margin: 0 auto;
+    width: min(736px, calc(100% - 48px));
+}
+
+.form-heading {
+    margin-bottom: 31px;
+}
+
+.form-heading h1 {
+    font-size: 32px;
+    letter-spacing: -.055em;
+    line-height: 1.25;
+}
+
+.form-heading p {
+    color: var(--color-text-secondary);
+    margin-top: 4px;
+}
+
+.booking-form {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.form-panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 15px;
+    margin: 0;
+    padding: 24px 24px 23px;
+}
+
+.form-panel legend {
+    color: var(--color-text-primary);
+    float: left;
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -.045em;
+    margin-bottom: 20px;
+    padding: 0;
+    width: 100%;
+}
+
+.form-grid {
+    clear: both;
+    display: grid;
+    gap: 18px 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.form-field {
+    color: var(--color-text-primary);
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
+    font-weight: 500;
+    gap: 6px;
+}
+
+.form-field b {
+    font-weight: inherit;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+    background: var(--color-surface);
+    border: 1px solid #d7dfec;
+    border-radius: 11px;
+    color: var(--color-text-primary);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 400;
+    outline: 0;
+    padding: 0 12px;
+    transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+.form-field input,
+.form-field select {
+    height: 37px;
+}
+
+.form-field textarea {
+    min-height: 78px;
+    padding: 11px 12px;
+    resize: vertical;
+}
+
+.form-field select {
+    appearance: none;
+    background-image:
+        linear-gradient(45deg, transparent 50%, #8b97a8 50%),
+        linear-gradient(135deg, #8b97a8 50%, transparent 50%);
+    background-position:
+        calc(100% - 17px) 16px,
+        calc(100% - 12px) 16px;
+    background-repeat: no-repeat;
+    background-size: 5px 5px, 5px 5px;
+    padding-right: 32px;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+    border-color: var(--color-brand-violet);
+    box-shadow: 0 0 0 3px rgba(96, 24, 240, .09);
+}
+
+.form-span {
+    grid-column: 1 / -1;
+}
+
+.upload-panel {
+    padding-bottom: 24px;
+}
+
+.upload-panel legend {
+    margin-bottom: 13px;
+}
+
+.upload-panel p {
+    clear: both;
+    color: var(--color-text-secondary);
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.file-upload {
+    align-items: center;
+    border: 2px dashed #d7dfec;
+    border-radius: 11px;
+    color: #63738b;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    gap: 9px;
+    height: 127px;
+    justify-content: center;
+    transition: background .18s ease, border-color .18s ease;
+}
+
+.file-upload:hover {
+    background: var(--color-surface-soft);
+    border-color: #cab0f7;
+}
+
+.file-upload svg {
+    height: 30px;
+    width: 30px;
+}
+
+.submit-booking {
+    align-items: center;
+    background: var(--color-brand-violet);
+    border-radius: 12px;
+    color: var(--color-surface);
+    display: flex;
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+    gap: 8px;
+    height: 49px;
+    justify-content: center;
+    transition: background .18s ease;
+}
+
+.submit-booking:hover {
+    background: var(--color-brand-indigo);
+}
+
+.submit-booking svg {
+    height: 16px;
+    width: 16px;
+}
+
 @media (max-width: 1050px) {
     .brand span {
         font-size: 15px;
@@ -1245,5 +1433,81 @@ svg {
 
     .booking-date a {
         display: none;
+    }
+
+    .booking-form-page {
+        padding: 47px 0 105px;
+    }
+
+    .form-container {
+        width: calc(100% - 30px);
+    }
+
+    .form-heading {
+        margin-bottom: 33px;
+    }
+
+    .form-heading h1 {
+        font-size: 30px;
+    }
+
+    .form-heading p {
+        line-height: 1.48;
+        margin-top: 7px;
+    }
+
+    .booking-form {
+        gap: 32px;
+    }
+
+    .form-panel {
+        border-radius: 15px;
+        padding: 24px 23px 25px;
+    }
+
+    .form-panel legend {
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+
+    .form-grid {
+        gap: 20px;
+        grid-template-columns: 1fr;
+    }
+
+    .form-field {
+        gap: 7px;
+    }
+
+    .form-field input,
+    .form-field select {
+        height: 36px;
+    }
+
+    .form-field textarea {
+        min-height: 88px;
+    }
+
+    .upload-panel {
+        padding: 25px 24px 24px;
+    }
+
+    .upload-panel legend {
+        margin-bottom: 16px;
+    }
+
+    .upload-panel p {
+        line-height: 1.5;
+        margin-bottom: 16px;
+    }
+
+    .file-upload {
+        height: 127px;
+        padding: 0 14px;
+        text-align: center;
+    }
+
+    .submit-booking {
+        height: 49px;
     }
 }

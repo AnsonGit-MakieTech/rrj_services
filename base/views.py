@@ -470,6 +470,35 @@ def _admin_bookings_for_dashboard():
     return bookings
 
 
+def _admin_chart_data(bookings):
+    monthly_counts = {}
+    service_counts = {}
+
+    for booking in reversed(bookings):
+        month = booking["date"].split(" ", 1)[0]
+        monthly_counts[month] = monthly_counts.get(month, 0) + 1
+        service = booking["service"]
+        service_counts[service] = service_counts.get(service, 0) + 1
+
+    monthly_items = [{"label": label, "value": value} for label, value in monthly_counts.items()]
+    service_items = [
+        {"label": label, "value": value}
+        for label, value in sorted(service_counts.items(), key=lambda item: (-item[1], item[0]))
+    ]
+    return (
+        {
+            "labels": [item["label"] for item in monthly_items],
+            "values": [item["value"] for item in monthly_items],
+            "items": monthly_items,
+        },
+        {
+            "labels": [item["label"] for item in service_items],
+            "values": [item["value"] for item in service_items],
+            "items": service_items,
+        },
+    )
+
+
 def _admin_booking_detail(reference):
     booking = next((row.copy() for row in ADMIN_BOOKINGS if row["reference"] == reference), None)
     if booking is None:
@@ -535,6 +564,8 @@ def admin_dashboard(request):
     if not IS_ADMIN:
         raise Http404("Admin dashboard not available")
 
+    bookings = _admin_bookings_for_dashboard()
+    monthly_chart, service_chart = _admin_chart_data(bookings)
     return render(
         request,
         "base/admin.html",
@@ -543,7 +574,9 @@ def admin_dashboard(request):
             "display_name": _display_name(request),
             "is_admin": IS_ADMIN,
             "admin_stats": ADMIN_STATS,
-            "admin_bookings": _admin_bookings_for_dashboard(),
+            "admin_bookings": bookings,
+            "admin_monthly_chart": monthly_chart,
+            "admin_service_chart": service_chart,
         },
     )
 

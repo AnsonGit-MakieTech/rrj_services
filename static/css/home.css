@@ -14,6 +14,103 @@
     --shadow-brand: 0 14px 30px rgba(96, 24, 240, .18);
     --font-display: "Plus Jakarta Sans", Arial, sans-serif;
     --font-body: "Inter", Arial, sans-serif;
+    --motion-fast: 150ms;
+    --motion-base: 230ms;
+    --motion-ease: cubic-bezier(.2, .8, .2, 1);
+}
+
+@keyframes page-enter {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes popover-enter {
+    from {
+        opacity: 0;
+        transform: translateY(-5px) scale(.985);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes popover-exit {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-5px) scale(.985);
+    }
+}
+
+@keyframes backdrop-enter {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes backdrop-exit {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes modal-enter {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(.985);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes modal-exit {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(8px) scale(.985);
+    }
+}
+
+@keyframes filtered-enter {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes filtered-exit {
+    to {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+}
+
+@keyframes chart-enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 *,
@@ -33,6 +130,10 @@ body {
     font-family: var(--font-body);
     font-size: 16px;
     line-height: 1.55;
+}
+
+body > main {
+    animation: page-enter var(--motion-base) var(--motion-ease) both;
 }
 
 body.menu-open {
@@ -151,6 +252,7 @@ svg {
     display: flex;
     gap: 10px;
     padding: 8px 0 8px 12px;
+    transition: color var(--motion-fast) ease;
 }
 
 .account-toggle:hover,
@@ -185,6 +287,16 @@ svg {
     position: absolute;
     right: 0;
     top: 52px;
+}
+
+.account-menu:not([hidden]) {
+    animation: popover-enter var(--motion-fast) var(--motion-ease) both;
+    transform-origin: right top;
+}
+
+.account-menu.is-closing {
+    animation: popover-exit var(--motion-fast) var(--motion-ease) both;
+    pointer-events: none;
 }
 
 .account-menu a {
@@ -347,7 +459,7 @@ svg {
     justify-content: center;
     min-height: 50px;
     padding: 0 25px;
-    transition: background .18s ease, border-color .18s ease, transform .18s ease;
+    transition: background var(--motion-fast) ease, border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease, transform var(--motion-fast) ease;
 }
 
 .button svg {
@@ -375,6 +487,13 @@ svg {
 .button-secondary:hover {
     background: var(--color-surface-soft);
     border-color: var(--color-brand-violet);
+}
+
+.button:active,
+.service-button:active,
+.admin-primary-action:active,
+.submit-payment:active {
+    transform: translateY(1px);
 }
 
 .trust-points {
@@ -440,6 +559,13 @@ svg {
     border-radius: 15px;
     box-shadow: 0 2px 3px rgba(17, 24, 39, .035);
     overflow: hidden;
+    transition: border-color var(--motion-base) ease, box-shadow var(--motion-base) ease, transform var(--motion-base) var(--motion-ease);
+}
+
+.service-card:hover {
+    border-color: #dacaf4;
+    box-shadow: 0 13px 29px rgba(64, 19, 143, .1);
+    transform: translateY(-3px);
 }
 
 .service-image {
@@ -452,7 +578,12 @@ svg {
     display: block;
     height: 100%;
     object-fit: cover;
+    transition: transform 320ms var(--motion-ease);
     width: 100%;
+}
+
+.service-card:hover .service-image img {
+    transform: scale(1.025);
 }
 
 .service-body {
@@ -500,6 +631,7 @@ svg {
     height: 34px;
     justify-content: center;
     margin-top: auto;
+    transition: background var(--motion-fast) ease, transform var(--motion-fast) ease;
 }
 
 .service-button:hover {
@@ -735,7 +867,13 @@ svg {
     height: 43px;
     margin: 0 auto;
     padding: 0 14px;
+    transition: border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
     width: 385px;
+}
+
+.service-search:focus-within {
+    border-color: var(--color-brand-violet);
+    box-shadow: 0 0 0 3px rgba(96, 24, 240, .09);
 }
 
 .service-search svg {
@@ -827,6 +965,13 @@ svg {
     gap: 17px;
     height: 83px;
     padding: 17px;
+    transition: border-color var(--motion-base) ease, box-shadow var(--motion-base) ease, transform var(--motion-base) var(--motion-ease);
+}
+
+.stat-card:hover {
+    border-color: #d8c3f7;
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-2px);
 }
 
 .stat-card svg {
@@ -879,12 +1024,13 @@ svg {
     justify-content: space-between;
     min-height: 90px;
     padding: 19px 21px;
-    transition: border-color .18s ease, box-shadow .18s ease;
+    transition: border-color var(--motion-base) ease, box-shadow var(--motion-base) ease, transform var(--motion-base) var(--motion-ease);
 }
 
 .booking-card:hover {
     border-color: #d8c3f7;
     box-shadow: var(--shadow-soft);
+    transform: translateY(-2px);
 }
 
 .booking-meta {
@@ -972,6 +1118,14 @@ svg {
     height: 126px;
     justify-content: center;
     padding: 19px 20px;
+    transition: border-color var(--motion-base) ease, box-shadow var(--motion-base) ease, transform var(--motion-base) var(--motion-ease);
+}
+
+.admin-stat:hover,
+.admin-panel:hover {
+    border-color: #d8c3f7;
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-2px);
 }
 
 .admin-stat svg {
@@ -1021,6 +1175,7 @@ svg {
     height: 281px;
     overflow: hidden;
     padding: 20px;
+    transition: border-color var(--motion-base) ease, box-shadow var(--motion-base) ease, transform var(--motion-base) var(--motion-ease);
 }
 
 .admin-panel h2 {
@@ -1029,115 +1184,57 @@ svg {
     line-height: 1.35;
 }
 
-.monthly-chart {
-    display: flex;
-    height: 190px;
-    margin: 20px 5px 0 43px;
-}
-
-.monthly-scale {
-    border-right: 1px solid #9aa4b2;
-    color: #64748b;
-    display: flex;
-    flex: 0 0 30px;
-    flex-direction: column;
-    font-size: 12px;
-    justify-content: space-between;
-    padding-right: 6px;
+.dashboard-chart {
+    height: 211px;
+    margin-top: 10px;
     position: relative;
-    text-align: right;
 }
 
-.monthly-plot {
+.dashboard-chart canvas {
+    display: none;
+}
+
+.dashboard-chart.is-rendered canvas {
+    animation: chart-enter var(--motion-base) var(--motion-ease) both;
+    display: block;
+}
+
+.chart-fallback {
+    color: var(--color-text-secondary);
+    display: grid;
+    font-size: 12px;
+    gap: 8px;
+    list-style: none;
+    margin: 17px 0 0;
+    padding: 0;
+}
+
+.chart-fallback li {
     align-items: center;
-    border-bottom: 1px solid #9aa4b2;
+    border-bottom: 1px solid var(--color-border);
     display: flex;
-    flex: 1;
-    flex-direction: column;
-    justify-content: flex-end;
-    position: relative;
+    justify-content: space-between;
+    padding-bottom: 7px;
 }
 
-.monthly-bar {
-    background: var(--color-brand-violet);
-    border-radius: 6px 6px 0 0;
-    height: 91.7%;
-    width: calc(100% - 70px);
-}
-
-.monthly-plot span {
-    bottom: -25px;
-    color: #64748b;
-    font-size: 12px;
-    position: absolute;
-}
-
-.service-chart {
-    height: 222px;
-    margin-top: 2px;
-    position: relative;
-}
-
-.service-pie {
-    background: conic-gradient(
-        var(--color-brand-indigo) 0 55%,
-        #efb515 55% 65%,
-        #12acd4 65% 75%,
-        #7651ee 75% 84%,
-        #20b85c 84% 93%,
-        var(--color-brand-violet) 93% 100%
-    );
-    border-radius: 50%;
-    height: 160px;
-    left: 50%;
-    position: absolute;
-    top: 38px;
-    transform: translateX(-50%);
-    width: 160px;
-}
-
-.pie-label {
-    font-size: 13px;
+.chart-fallback strong {
+    color: var(--color-text-primary);
     font-weight: 500;
+}
+
+.chart-fallback-services {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dashboard-chart.is-rendered .chart-fallback {
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
     position: absolute;
     white-space: nowrap;
-}
-
-.label-painting {
-    color: var(--color-brand-indigo);
-    left: 50%;
-    top: 10px;
-    transform: translateX(-50%);
-}
-
-.label-cabinet {
-    color: var(--color-brand-violet);
-    right: calc(50% + 82px);
-    top: 141px;
-}
-
-.label-glass {
-    color: #20a856;
-    right: calc(50% + 54px);
-    top: 179px;
-}
-
-.label-carpentry {
-    color: #7651ee;
-    left: calc(50% + 2px);
-    top: 194px;
-}
-
-.label-sculpture {
-    color: #079cc6;
-    left: calc(50% + 78px);
-    top: 173px;
-}
-
-.label-tiles {
-    color: #d29200;
-    left: calc(50% + 94px);
-    top: 142px;
+    width: 1px;
 }
 
 .admin-filters {
@@ -1232,6 +1329,16 @@ svg {
     top: calc(100% + 4px);
     width: 100%;
     z-index: 5;
+}
+
+.admin-status-options:not([hidden]) {
+    animation: popover-enter var(--motion-fast) var(--motion-ease) both;
+    transform-origin: right top;
+}
+
+.admin-status-options.is-closing {
+    animation: popover-exit var(--motion-fast) var(--motion-ease) both;
+    pointer-events: none;
 }
 
 .admin-status-options[hidden] {
@@ -1450,6 +1557,7 @@ svg {
     height: 37px;
     outline: 0;
     padding: 0 12px 0 39px;
+    transition: border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
     width: 100%;
 }
 
@@ -1467,6 +1575,7 @@ svg {
     border: 1px solid var(--color-border);
     border-radius: 15px;
     overflow: hidden;
+    transition: box-shadow var(--motion-base) ease;
 }
 
 .settings-table {
@@ -1644,6 +1753,22 @@ body.modal-open {
     display: none;
 }
 
+.service-modal:not([hidden]) .service-modal-backdrop {
+    animation: backdrop-enter var(--motion-base) ease both;
+}
+
+.service-modal:not([hidden]) .service-modal-card {
+    animation: modal-enter var(--motion-base) var(--motion-ease) both;
+}
+
+.service-modal.is-closing .service-modal-backdrop {
+    animation: backdrop-exit var(--motion-fast) ease both;
+}
+
+.service-modal.is-closing .service-modal-card {
+    animation: modal-exit var(--motion-fast) var(--motion-ease) both;
+}
+
 .service-modal-backdrop {
     background: rgba(7, 13, 25, .79);
     inset: 0;
@@ -1713,6 +1838,7 @@ body.modal-open {
     font-weight: 400;
     outline: 0;
     padding: 0 12px;
+    transition: border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
 }
 
 .service-modal-field input {
@@ -1769,6 +1895,15 @@ body.modal-open {
     gap: 12px;
     margin-top: 10px;
     padding: 9px;
+}
+
+.service-cover-preview:not([hidden]) {
+    animation: filtered-enter var(--motion-fast) var(--motion-ease) both;
+}
+
+.service-cover-preview.is-closing {
+    animation: filtered-exit var(--motion-fast) ease both;
+    pointer-events: none;
 }
 
 .service-cover-preview[hidden] {
@@ -1838,6 +1973,7 @@ body.modal-open {
     font-weight: 600;
     height: 38px;
     padding: 0 17px;
+    transition: background var(--motion-fast) ease, border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease, transform var(--motion-fast) ease;
 }
 
 .service-cancel {
@@ -1856,6 +1992,10 @@ body.modal-open {
 
 .service-save:hover {
     background: var(--color-brand-indigo);
+}
+
+.service-modal-actions button:active {
+    transform: translateY(1px);
 }
 
 .auth-page {
@@ -1993,12 +2133,16 @@ body.modal-open {
     font-weight: 600;
     height: 49px;
     margin-top: 8px;
-    transition: background .18s ease, box-shadow .18s ease;
+    transition: background var(--motion-fast) ease, box-shadow var(--motion-fast) ease, transform var(--motion-fast) ease;
 }
 
 .auth-submit:hover {
     background: var(--color-brand-indigo);
     box-shadow: var(--shadow-brand);
+}
+
+.auth-submit:active {
+    transform: translateY(1px);
 }
 
 .auth-switch {
@@ -2069,6 +2213,7 @@ body.modal-open {
     border: 1px solid var(--color-border);
     border-radius: 15px;
     padding: 25px 24px;
+    transition: border-color var(--motion-base) ease, box-shadow var(--motion-base) ease;
 }
 
 .booking-summary-header {
@@ -2204,6 +2349,7 @@ body.modal-open {
     gap: 7px;
     height: 38px;
     padding: 0 15px;
+    transition: background var(--motion-fast) ease, border-color var(--motion-fast) ease, transform var(--motion-fast) ease;
 }
 
 .decision-button svg {
@@ -2261,6 +2407,7 @@ body.modal-open {
     height: 38px;
     outline: 0;
     padding: 0 12px;
+    transition: border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
 }
 
 .payment-field > input:focus {
@@ -2335,6 +2482,16 @@ body.modal-open {
     z-index: 5;
 }
 
+.payment-select-options:not([hidden]) {
+    animation: popover-enter var(--motion-fast) var(--motion-ease) both;
+    transform-origin: top;
+}
+
+.payment-select-options.is-closing {
+    animation: popover-exit var(--motion-fast) var(--motion-ease) both;
+    pointer-events: none;
+}
+
 .payment-select-options[hidden] {
     display: none;
 }
@@ -2406,10 +2563,12 @@ body.modal-open {
     height: 39px;
     margin-top: 18px;
     padding: 0 16px;
+    transition: background var(--motion-fast) ease, box-shadow var(--motion-fast) ease, transform var(--motion-fast) ease;
 }
 
 .submit-payment:hover {
     background: var(--color-brand-indigo);
+    box-shadow: var(--shadow-brand);
 }
 
 .submit-payment svg {
@@ -2474,7 +2633,14 @@ body.modal-open {
     font-size: 13px;
     height: 38px;
     min-width: 0;
+    outline: 0;
     padding: 0 12px;
+    transition: border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
+}
+
+.message-compose input:focus {
+    border-color: var(--color-brand-violet);
+    box-shadow: 0 0 0 3px rgba(96, 24, 240, .09);
 }
 
 .message-compose button {
@@ -2485,11 +2651,25 @@ body.modal-open {
     display: flex;
     height: 38px;
     justify-content: center;
+    transition: background var(--motion-fast) ease, transform var(--motion-fast) ease;
     width: 38px;
 }
 
 .message-compose button:hover {
     background: var(--color-brand-indigo);
+}
+
+.message-compose button:active {
+    transform: translateY(1px);
+}
+
+.is-filter-revealing {
+    animation: filtered-enter var(--motion-base) var(--motion-ease) both;
+}
+
+.is-filter-leaving {
+    animation: filtered-exit var(--motion-fast) ease both;
+    pointer-events: none;
 }
 
 .message-compose svg {
@@ -2528,6 +2708,7 @@ body.modal-open {
     font-size: 14px;
     outline: 0;
     padding: 0 12px;
+    transition: border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
 }
 
 .admin-quotation-fields input {
@@ -2555,10 +2736,12 @@ body.modal-open {
     height: 39px;
     margin-top: 18px;
     padding: 0 16px;
+    transition: background var(--motion-fast) ease, box-shadow var(--motion-fast) ease, transform var(--motion-fast) ease;
 }
 
 .admin-primary-action:hover {
     background: var(--color-brand-indigo);
+    box-shadow: var(--shadow-brand);
 }
 
 .admin-payment-grid {
@@ -2605,6 +2788,7 @@ body.modal-open {
     gap: 7px;
     height: 38px;
     padding: 0 15px;
+    transition: background var(--motion-fast) ease, border-color var(--motion-fast) ease, transform var(--motion-fast) ease;
 }
 
 .admin-payment-actions svg {
@@ -2647,11 +2831,18 @@ body.modal-open {
     font-weight: 500;
     height: 38px;
     padding: 0 16px;
+    transition: border-color var(--motion-fast) ease, color var(--motion-fast) ease, transform var(--motion-fast) ease;
 }
 
 .admin-status-actions button:hover {
     border-color: var(--color-brand-violet);
     color: var(--color-brand-violet);
+}
+
+.decision-button:active,
+.admin-payment-actions button:active,
+.admin-status-actions button:active {
+    transform: translateY(1px);
 }
 
 .admin-messages-empty {
@@ -2835,6 +3026,7 @@ body.modal-open {
     border-radius: 15px;
     margin: 0;
     padding: 24px 24px 23px;
+    transition: border-color var(--motion-base) ease, box-shadow var(--motion-base) ease;
 }
 
 .form-panel legend {
@@ -2946,12 +3138,18 @@ body.modal-open {
     gap: 9px;
     height: 127px;
     justify-content: center;
-    transition: background .18s ease, border-color .18s ease;
+    transition: background var(--motion-fast) ease, border-color var(--motion-fast) ease, color var(--motion-fast) ease;
 }
 
 .file-upload:hover {
     background: var(--color-surface-soft);
     border-color: #cab0f7;
+}
+
+.file-upload:focus-within {
+    background: var(--color-surface-soft);
+    border-color: var(--color-brand-violet);
+    color: var(--color-brand-violet);
 }
 
 .file-upload svg {
@@ -2980,6 +3178,15 @@ body.modal-open {
     justify-content: space-between;
     min-height: 44px;
     padding: 8px 14px;
+}
+
+.attachment-item.is-list-entering {
+    animation: filtered-enter var(--motion-base) var(--motion-ease) both;
+}
+
+.attachment-item.is-list-removing {
+    animation: filtered-exit var(--motion-fast) ease both;
+    pointer-events: none;
 }
 
 .attachment-item span {
@@ -3021,11 +3228,16 @@ body.modal-open {
     gap: 8px;
     height: 49px;
     justify-content: center;
-    transition: background .18s ease;
+    transition: background var(--motion-fast) ease, box-shadow var(--motion-fast) ease, transform var(--motion-fast) ease;
 }
 
 .submit-booking:hover {
     background: var(--color-brand-indigo);
+    box-shadow: var(--shadow-brand);
+}
+
+.submit-booking:active {
+    transform: translateY(1px);
 }
 
 .submit-booking svg {
@@ -3118,6 +3330,16 @@ body.modal-open {
 
     .mobile-navigation[hidden] {
         display: none;
+    }
+
+    .mobile-navigation:not([hidden]) {
+        animation: popover-enter var(--motion-fast) var(--motion-ease) both;
+        transform-origin: top;
+    }
+
+    .mobile-navigation.is-closing {
+        animation: popover-exit var(--motion-fast) var(--motion-ease) both;
+        pointer-events: none;
     }
 
     .mobile-navigation a {
@@ -3427,52 +3649,9 @@ body.modal-open {
         padding: 21px 19px;
     }
 
-    .monthly-chart {
-        height: 177px;
-        margin: 23px 6px 0 47px;
-    }
-
-    .monthly-bar {
-        width: calc(100% - 26px);
-    }
-
-    .service-chart {
-        height: 224px;
-    }
-
-    .service-pie {
-        height: 160px;
-        top: 37px;
-        width: 160px;
-    }
-
-    .label-painting {
-        top: 9px;
-    }
-
-    .label-cabinet {
-        right: calc(50% + 71px);
-        top: 142px;
-    }
-
-    .label-glass {
-        right: calc(50% + 27px);
-        top: 182px;
-    }
-
-    .label-carpentry {
-        left: calc(50% + 6px);
-        top: 197px;
-    }
-
-    .label-sculpture {
-        left: calc(50% + 68px);
-        top: 178px;
-    }
-
-    .label-tiles {
-        left: calc(50% + 96px);
-        top: 142px;
+    .dashboard-chart {
+        height: 215px;
+        margin-top: 9px;
     }
 
     .admin-filters {
@@ -3807,5 +3986,17 @@ body.modal-open {
 
     .submit-booking {
         height: 49px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-delay: 0ms !important;
+        animation-duration: 1ms !important;
+        scroll-behavior: auto !important;
+        transition-delay: 0ms !important;
+        transition-duration: 1ms !important;
     }
 }

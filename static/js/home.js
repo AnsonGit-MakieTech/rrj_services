@@ -25,16 +25,88 @@
     const serviceModals = document.querySelectorAll("[data-service-modal]");
     const serviceModalClosers = document.querySelectorAll("[data-service-modal-close]");
     const serviceCoverFields = document.querySelectorAll("[data-service-cover-field]");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    function showAnimated(element) {
+        element.classList.remove("is-closing");
+        element.hidden = false;
+    }
+
+    function hideAnimated(element) {
+        if (element.hidden) {
+            return;
+        }
+
+        if (reducedMotion.matches) {
+            element.hidden = true;
+            element.classList.remove("is-closing");
+            return;
+        }
+
+        element.classList.add("is-closing");
+        window.setTimeout(function () {
+            if (element.classList.contains("is-closing")) {
+                element.hidden = true;
+                element.classList.remove("is-closing");
+            }
+        }, 160);
+    }
+
+    function animateFilterReveal(element) {
+        if (reducedMotion.matches) {
+            return;
+        }
+
+        element.classList.remove("is-filter-revealing");
+        window.requestAnimationFrame(function () {
+            element.classList.add("is-filter-revealing");
+        });
+        element.addEventListener("animationend", function () {
+            element.classList.remove("is-filter-revealing");
+        }, {once: true});
+    }
+
+    function setFilteredVisibility(element, shouldShow) {
+        window.clearTimeout(element.filterTimer);
+
+        if (shouldShow) {
+            const shouldReveal = element.hidden || element.classList.contains("is-filter-leaving");
+            element.hidden = false;
+            element.classList.remove("is-filter-leaving");
+            if (shouldReveal) {
+                animateFilterReveal(element);
+            }
+            return;
+        }
+
+        if (element.hidden || element.classList.contains("is-filter-leaving")) {
+            return;
+        }
+
+        element.classList.remove("is-filter-revealing");
+        if (reducedMotion.matches) {
+            element.hidden = true;
+            return;
+        }
+
+        element.classList.add("is-filter-leaving");
+        element.filterTimer = window.setTimeout(function () {
+            if (element.classList.contains("is-filter-leaving")) {
+                element.hidden = true;
+                element.classList.remove("is-filter-leaving");
+            }
+        }, 160);
+    }
 
     function closeAccountMenu() {
         accountToggle.setAttribute("aria-expanded", "false");
-        accountMenu.hidden = true;
+        hideAnimated(accountMenu);
     }
 
     function closeMobileNavigation() {
         navToggle.setAttribute("aria-expanded", "false");
         navToggle.setAttribute("aria-label", "Open navigation");
-        mobileNavigation.hidden = true;
+        hideAnimated(mobileNavigation);
         document.body.classList.remove("menu-open");
     }
 
@@ -42,7 +114,11 @@
         const isOpen = accountToggle.getAttribute("aria-expanded") === "true";
         closeMobileNavigation();
         accountToggle.setAttribute("aria-expanded", String(!isOpen));
-        accountMenu.hidden = isOpen;
+        if (isOpen) {
+            hideAnimated(accountMenu);
+        } else {
+            showAnimated(accountMenu);
+        }
     });
 
     navToggle.addEventListener("click", function () {
@@ -50,7 +126,11 @@
         closeAccountMenu();
         navToggle.setAttribute("aria-expanded", String(!isOpen));
         navToggle.setAttribute("aria-label", isOpen ? "Open navigation" : "Close navigation");
-        mobileNavigation.hidden = isOpen;
+        if (isOpen) {
+            hideAnimated(mobileNavigation);
+        } else {
+            showAnimated(mobileNavigation);
+        }
         document.body.classList.toggle("menu-open", !isOpen);
     });
 
@@ -78,13 +158,13 @@
 
             serviceCards.forEach(function (card) {
                 const isMatch = card.dataset.search.toLowerCase().includes(query);
-                card.hidden = !isMatch;
+                setFilteredVisibility(card, isMatch);
                 if (isMatch) {
                     matches += 1;
                 }
             });
 
-            emptyServices.hidden = matches !== 0;
+            setFilteredVisibility(emptyServices, matches === 0);
         });
     }
 
@@ -99,12 +179,15 @@
             fileInput.files = transfer.files;
         }
 
-        function renderAttachments() {
+        function renderAttachments(animateItems) {
             attachmentList.replaceChildren();
 
-            selectedFiles.forEach(function (file, index) {
+            selectedFiles.forEach(function (file) {
                 const row = document.createElement("div");
                 row.className = "attachment-item";
+                if (animateItems && !reducedMotion.matches) {
+                    row.classList.add("is-list-entering");
+                }
 
                 const fileName = document.createElement("span");
                 fileName.textContent = file.name;
@@ -115,9 +198,23 @@
                 removeButton.setAttribute("aria-label", "Remove " + file.name);
                 removeButton.innerHTML = "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 6 18 18M18 6 6 18\"/></svg>";
                 removeButton.addEventListener("click", function () {
-                    selectedFiles.splice(index, 1);
-                    syncFileInput();
-                    renderAttachments();
+                    function removeFile() {
+                        const selectedIndex = selectedFiles.indexOf(file);
+                        if (selectedIndex === -1) {
+                            return;
+                        }
+                        selectedFiles.splice(selectedIndex, 1);
+                        syncFileInput();
+                        renderAttachments(false);
+                    }
+
+                    if (reducedMotion.matches) {
+                        removeFile();
+                        return;
+                    }
+
+                    row.classList.add("is-list-removing");
+                    window.setTimeout(removeFile, 160);
                 });
 
                 row.append(fileName, removeButton);
@@ -139,7 +236,7 @@
                 }
             });
             syncFileInput();
-            renderAttachments();
+            renderAttachments(true);
         });
     }
 
@@ -152,12 +249,12 @@
 
         function closePaymentSelect() {
             selectToggle.setAttribute("aria-expanded", "false");
-            optionsPanel.hidden = true;
+            hideAnimated(optionsPanel);
         }
 
         function openPaymentSelect() {
             selectToggle.setAttribute("aria-expanded", "true");
-            optionsPanel.hidden = false;
+            showAnimated(optionsPanel);
         }
 
         function selectPaymentMethod(option) {
@@ -228,12 +325,12 @@
     if (adminStatusSelect && adminStatus && adminStatusToggle && adminStatusLabel && adminStatusOptionsPanel) {
         function closeAdminStatusSelect() {
             adminStatusToggle.setAttribute("aria-expanded", "false");
-            adminStatusOptionsPanel.hidden = true;
+            hideAnimated(adminStatusOptionsPanel);
         }
 
         function openAdminStatusSelect() {
             adminStatusToggle.setAttribute("aria-expanded", "true");
-            adminStatusOptionsPanel.hidden = false;
+            showAnimated(adminStatusOptionsPanel);
         }
 
         function selectAdminStatus(option) {
@@ -308,13 +405,13 @@
                 const matchesSearch = row.dataset.search.toLowerCase().includes(searchTerm);
                 const matchesStatus = !status || row.dataset.status === status;
                 const isVisible = matchesSearch && matchesStatus;
-                row.hidden = !isVisible;
+                setFilteredVisibility(row, isVisible);
                 if (isVisible) {
                     matches += 1;
                 }
             });
 
-            adminEmpty.hidden = matches !== 0;
+            setFilteredVisibility(adminEmpty, matches === 0);
         }
 
         adminSearch.addEventListener("input", filterAdminRows);
@@ -328,13 +425,13 @@
 
             settingsRows.forEach(function (row) {
                 const isVisible = row.dataset.search.toLowerCase().includes(query);
-                row.hidden = !isVisible;
+                setFilteredVisibility(row, isVisible);
                 if (isVisible) {
                     matches += 1;
                 }
             });
 
-            settingsEmpty.hidden = matches !== 0;
+            setFilteredVisibility(settingsEmpty, matches === 0);
         });
     }
 
@@ -355,7 +452,7 @@
             input.value = "";
             image.removeAttribute("src");
             name.textContent = "";
-            preview.hidden = true;
+            hideAnimated(preview);
         }
 
         serviceCoverFields.forEach(function (field) {
@@ -380,7 +477,7 @@
                 image.src = objectUrl;
                 image.dataset.objectUrl = objectUrl;
                 name.textContent = file.name;
-                preview.hidden = false;
+                showAnimated(preview);
             });
 
             remove.addEventListener("click", function () {
@@ -394,7 +491,7 @@
                 if (coverField) {
                     clearServiceCover(coverField);
                 }
-                modal.hidden = true;
+                hideAnimated(modal);
             });
             document.body.classList.remove("modal-open");
         }
@@ -413,7 +510,7 @@
             }
 
             closeServiceModals();
-            modal.hidden = false;
+            showAnimated(modal);
             document.body.classList.add("modal-open");
             modal.querySelector("input").focus();
         }

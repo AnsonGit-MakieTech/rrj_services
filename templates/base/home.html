@@ -149,23 +149,7 @@
                     {% for service in services %}
                     <article class="service-card">
                         <div class="service-image">
-                            {% if service.icon == "building" %}
-                            <svg viewBox="0 0 72 72" aria-hidden="true"><path d="M16 62V10h40v52H16Z"/><path d="M25 20h8v8h-8zm14 0h8v8h-8zM25 34h8v8h-8zm14 0h8v8h-8zM25 48h8v14h-8zm14 0h8v8h-8z"/></svg>
-                            {% elif service.icon == "home" %}
-                            <svg viewBox="0 0 72 72" aria-hidden="true"><path d="m10 33 26-23 26 23"/><path d="M16 29v31h40V29M29 60V43h14v17"/></svg>
-                            {% elif service.icon == "cabinet" %}
-                            <svg viewBox="0 0 72 72" aria-hidden="true"><path d="M17 12h38v48H17V12Zm0 22h38M36 12v48"/><path d="M29 26h2m10 0h2M29 47h2m10 0h2"/></svg>
-                            {% elif service.icon == "partition" %}
-                            <svg viewBox="0 0 72 72" aria-hidden="true"><path d="m14 20 25-10 19 8v37L34 63l-20-8V20Z"/><path d="M34 63V27l24-9M14 20l20 7"/><path d="M43 39h3"/></svg>
-                            {% elif service.icon == "leaf" %}
-                            <svg viewBox="0 0 72 72" aria-hidden="true"><path d="M15 59c9-17 20-26 42-42M22 48C10 28 29 12 57 14c2 28-15 46-35 34Z"/><path d="M30 38h15M38 30v15"/></svg>
-                            {% elif service.icon == "paint" %}
-                            <svg viewBox="0 0 72 72" aria-hidden="true"><path d="M36 10a26 26 0 1 0 0 52c6 0 8-4 8-8 0-3-2-5-2-8 0-4 3-6 7-6h7c4 0 6-3 6-7C62 20 50 10 36 10Z"/><path d="M24 27h.1M35 21h.1M47 27h.1M26 40h.1"/></svg>
-                            {% elif service.icon == "shower" %}
-                            <svg viewBox="0 0 72 72" aria-hidden="true"><path d="M20 26a14 14 0 0 1 28-2v35"/><path d="M15 27h26L15 53V27Z"/><path d="M20 57v3m7-9v5m7-11v5m7-11v5"/></svg>
-                            {% else %}
-                            <svg viewBox="0 0 72 72" aria-hidden="true"><path d="M20 10h32v52H20V10Zm6 7h20v38H26V17Z"/><path d="M39 37h3M15 62h42"/></svg>
-                            {% endif %}
+                            <img src="{{ service.image_url }}" alt="{{ service.name }}" loading="lazy" decoding="async">
                         </div>
                         <div class="service-body">
                             <h3>{{ service.name }}</h3>

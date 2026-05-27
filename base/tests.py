@@ -11,3 +11,5 @@ class HomePageTests(TestCase):
         self.assertContains(response, "Condo Renovation")
         self.assertContains(response, "RRJ's Maintenance Services")
         self.assertContains(response, "assets/rrj-logo-icon.png")
+        self.assertContains(response, "images.unsplash.com")
+        self.assertContains(response, 'alt="Condo Renovation"')

@@ -397,18 +397,16 @@ svg {
 }
 
 .service-image {
-    align-items: center;
     background: var(--color-surface-soft);
-    display: flex;
     height: 153px;
-    justify-content: center;
+    overflow: hidden;
 }
 
-.service-image svg {
-    color: var(--color-brand-violet);
-    height: 60px;
-    stroke-width: 2.6;
-    width: 60px;
+.service-image img {
+    display: block;
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
 }
 
 .service-body {

@@ -1,0 +1,85 @@
+{% load static %}
+<header class="site-header">
+    <div class="container header-inner">
+        <a class="brand" href="{% url 'home' %}" aria-label="RRJ's Maintenance Services home">
+            <img src="{% static 'assets/rrj-logo-icon.png' %}" alt="" class="brand-icon">
+            <span>RRJ's Maintenance Services</span>
+        </a>
+
+        <nav class="desktop-nav" aria-label="Primary navigation">
+            <a {% if active_page == "home" %}class="active"{% endif %} href="{% url 'home' %}">Home</a>
+            <a {% if active_page == "services" %}class="active"{% endif %} href="{% url 'services' %}">Services</a>
+            <a {% if active_page == "bookings" %}class="active"{% endif %} href="{% url 'my_bookings' %}">My Bookings</a>
+        </nav>
+
+        <div class="header-actions">
+            <button
+                type="button"
+                class="account-toggle"
+                data-account-toggle
+                aria-expanded="false"
+                aria-controls="account-menu"
+            >
+                <svg class="user-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z"/>
+                </svg>
+                <span class="account-label">{{ display_name }}</span>
+                <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m6 9 6 6 6-6"/>
+                </svg>
+            </button>
+
+            <div class="account-menu" id="account-menu" data-account-menu hidden>
+                <a href="{% url 'my_bookings' %}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9 5h6m-7 3h8M8 3h8a2 2 0 0 1 2 2v15H6V5a2 2 0 0 1 2-2Zm2 9h4m-4 4h4"/>
+                    </svg>
+                    My Bookings
+                </a>
+                <a href="#">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M10 17 15 12l-5-5m5 5H3m10-9h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/>
+                    </svg>
+                    Logout
+                </a>
+            </div>
+
+            <button
+                type="button"
+                class="nav-toggle"
+                data-nav-toggle
+                aria-expanded="false"
+                aria-controls="mobile-navigation"
+                aria-label="Open navigation"
+            >
+                <svg class="menu-open-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+                <svg class="menu-close-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 6 18 18M18 6 6 18"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <nav class="mobile-navigation" id="mobile-navigation" data-mobile-navigation aria-label="Mobile navigation" hidden>
+        <a {% if active_page == "home" %}class="active"{% endif %} href="{% url 'home' %}">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m3 11 9-8 9 8v10h-6v-6H9v6H3V11Z"/>
+            </svg>
+            Home
+        </a>
+        <a {% if active_page == "services" %}class="active"{% endif %} href="{% url 'services' %}">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m14.7 6.3 3-3a4.3 4.3 0 0 1-5.5 5.5l-7.9 7.9a2.1 2.1 0 0 0 3 3l7.9-7.9a4.3 4.3 0 0 1 5.5-5.5l-3 3"/>
+            </svg>
+            Services
+        </a>
+        <a {% if active_page == "bookings" %}class="active"{% endif %} href="{% url 'my_bookings' %}">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 5h6m-7 3h8M8 3h8a2 2 0 0 1 2 2v15H6V5a2 2 0 0 1 2-2Zm2 9h4m-4 4h4"/>
+            </svg>
+            My Bookings
+        </a>
+    </nav>
+</header>

@@ -13,3 +13,25 @@ class HomePageTests(TestCase):
         self.assertContains(response, "assets/rrj-logo-icon.png")
         self.assertContains(response, "images.unsplash.com")
         self.assertContains(response, 'alt="Condo Renovation"')
+
+
+class ServicesPageTests(TestCase):
+    def test_services_page_renders_full_catalog(self):
+        response = self.client.get(reverse("services"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Search services...")
+        self.assertContains(response, "Condo Renovation")
+        self.assertContains(response, "Carpentry")
+        self.assertContains(response, "images.unsplash.com", count=16)
+
+
+class MyBookingsPageTests(TestCase):
+    def test_my_bookings_page_renders_dashboard_fixture_data(self):
+        response = self.client.get(reverse("my_bookings"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "My Bookings")
+        self.assertContains(response, "New Booking")
+        self.assertContains(response, "Pending Quotation", count=2)
+        self.assertContains(response, "BK-MPL5LPV3")

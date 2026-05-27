@@ -50,20 +50,117 @@ SERVICES = [
         "price": "PHP 10,000 - PHP 45,000",
         "image_url": "https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=640&q=80",
     },
+    {
+        "name": "Ceiling Cove Lights Designs",
+        "description": "Decorative ceiling cove lighting design and installation for ambient interiors.",
+        "price": "PHP 10,000 - PHP 50,000",
+        "image_url": "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=640&q=80",
+    },
+    {
+        "name": "Sculpture Maker",
+        "description": "Custom decorative sculptures and art pieces for interior and exterior spaces.",
+        "price": "PHP 15,000 - PHP 100,000",
+        "image_url": "https://images.unsplash.com/photo-1564399579883-451a5d44ec08?auto=format&fit=crop&w=640&q=80",
+    },
+    {
+        "name": "Roofing Renovation",
+        "description": "Complete roofing repair, replacement, and waterproofing services.",
+        "price": "PHP 20,000 - PHP 150,000",
+        "image_url": "https://images.unsplash.com/photo-1632759145351-1d592919f522?auto=format&fit=crop&w=640&q=80",
+    },
+    {
+        "name": "Electrical Services",
+        "description": "Licensed electrical work including wiring, panel upgrades, and fixtures.",
+        "price": "PHP 3,000 - PHP 50,000",
+        "image_url": "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=640&q=80",
+    },
+    {
+        "name": "Plumbing Services",
+        "description": "Complete plumbing solutions from leak repair to full system installation.",
+        "price": "PHP 2,000 - PHP 40,000",
+        "image_url": "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=640&q=80",
+    },
+    {
+        "name": "Waterproofing",
+        "description": "Professional waterproofing for roofs, walls, basements, and bathrooms.",
+        "price": "PHP 8,000 - PHP 60,000",
+        "image_url": "https://images.unsplash.com/photo-1628624747186-a941c476b7ef?auto=format&fit=crop&w=640&q=80",
+    },
+    {
+        "name": "Aircon Installation",
+        "description": "Split-type and window AC installation, cleaning, and maintenance services.",
+        "price": "PHP 5,000 - PHP 25,000",
+        "image_url": "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=640&q=80",
+    },
+    {
+        "name": "Carpentry",
+        "description": "Custom woodworking, furniture repair, and structural carpentry services.",
+        "price": "PHP 5,000 - PHP 80,000",
+        "image_url": "https://images.unsplash.com/photo-1601058268499-e52658b8bb88?auto=format&fit=crop&w=640&q=80",
+    },
+]
+
+BOOKINGS = [
+    {
+        "reference": "BK-MPL5LPV3",
+        "service": "Carpentry",
+        "status": "Pending Quotation",
+        "date": "May 25, 2026",
+        "description": "",
+    },
+    {
+        "reference": "BK-MPKPRA6C",
+        "service": "Sculpture Maker",
+        "status": "Pending Quotation",
+        "date": "May 25, 2026",
+        "description": "fasdfsdf",
+    },
 ]
 
 
-def home(request):
+def _display_name(request):
     if request.user.is_authenticated:
-        display_name = request.user.get_full_name() or request.user.username
-    else:
-        display_name = "Makie Tech"
+        return request.user.get_full_name() or request.user.username
+    return "Makie Tech"
 
+
+def home(request):
     return render(
         request,
         "base/home.html",
         {
-            "display_name": display_name,
+            "active_page": "home",
+            "display_name": _display_name(request),
+            "services": SERVICES[:8],
+        },
+    )
+
+
+def services(request):
+    return render(
+        request,
+        "base/services.html",
+        {
+            "active_page": "services",
+            "display_name": _display_name(request),
             "services": SERVICES,
+        },
+    )
+
+
+def my_bookings(request):
+    return render(
+        request,
+        "base/my_bookings.html",
+        {
+            "active_page": "bookings",
+            "display_name": _display_name(request),
+            "bookings": BOOKINGS,
+            "booking_stats": [
+                {"label": "Total", "value": "2", "kind": "total"},
+                {"label": "Pending", "value": "2", "kind": "pending"},
+                {"label": "Active", "value": "0", "kind": "active"},
+                {"label": "Completed", "value": "0", "kind": "completed"},
+            ],
         },
     )

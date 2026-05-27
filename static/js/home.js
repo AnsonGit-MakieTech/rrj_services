@@ -3,6 +3,9 @@
     const accountMenu = document.querySelector("[data-account-menu]");
     const navToggle = document.querySelector("[data-nav-toggle]");
     const mobileNavigation = document.querySelector("[data-mobile-navigation]");
+    const serviceSearch = document.querySelector("[data-service-search]");
+    const serviceCards = document.querySelectorAll("[data-service-card]");
+    const emptyServices = document.querySelector("[data-empty-services]");
 
     function closeAccountMenu() {
         accountToggle.setAttribute("aria-expanded", "false");
@@ -48,4 +51,21 @@
     mobileNavigation.querySelectorAll("a").forEach(function (link) {
         link.addEventListener("click", closeMobileNavigation);
     });
+
+    if (serviceSearch) {
+        serviceSearch.addEventListener("input", function () {
+            const query = serviceSearch.value.toLowerCase().trim();
+            let matches = 0;
+
+            serviceCards.forEach(function (card) {
+                const isMatch = card.dataset.search.toLowerCase().includes(query);
+                card.hidden = !isMatch;
+                if (isMatch) {
+                    matches += 1;
+                }
+            });
+
+            emptyServices.hidden = matches !== 0;
+        });
+    }
 }());

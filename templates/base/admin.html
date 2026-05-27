@@ -1,0 +1,132 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Dashboard | RRJ's Maintenance Services</title>
+    <meta name="description" content="Manage RRJ's Maintenance Services bookings and monitor business activity.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <script src="{% static 'js/home.js' %}" defer></script>
+</head>
+<body class="admin-dashboard-page">
+    {% include "base/includes/header.html" %}
+
+    <main class="admin-page">
+        <div class="container admin-container">
+            <h1>Admin Dashboard</h1>
+
+            <section class="admin-stats" aria-label="Dashboard metrics">
+                {% for stat in admin_stats %}
+                <article class="admin-stat admin-stat-{{ stat.kind }}">
+                    {% if stat.kind == "bookings" %}
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5h6M8 3h8a2 2 0 0 1 2 2v15H6V5a2 2 0 0 1 2-2Zm2 8h4m-4 4h4"/><path d="M9 3V2m6 1V2"/></svg>
+                    {% elif stat.kind == "pending" %}
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v5l3.5 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/></svg>
+                    {% elif stat.kind == "active" %}
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m22 4-10 10.01-3-3"/></svg>
+                    {% else %}
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1v22m5-18.5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    {% endif %}
+                    <strong>{{ stat.value }}</strong>
+                    <span>{{ stat.label }}</span>
+                </article>
+                {% endfor %}
+            </section>
+
+            <section class="admin-charts" aria-label="Booking charts">
+                <article class="admin-panel">
+                    <h2>Monthly Bookings</h2>
+                    <div class="monthly-chart" aria-label="May: 11 bookings">
+                        <div class="monthly-scale" aria-hidden="true">
+                            <span>12</span>
+                            <span>9</span>
+                            <span>6</span>
+                            <span>3</span>
+                            <span>0</span>
+                        </div>
+                        <div class="monthly-plot">
+                            <div class="monthly-bar" title="11 bookings"></div>
+                            <span>May</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="admin-panel">
+                    <h2>Most Requested Services</h2>
+                    <div class="service-chart" aria-label="Most requested service is Re Painting">
+                        <div class="service-pie"></div>
+                        <span class="pie-label label-painting">Re Painting</span>
+                        <span class="pie-label label-cabinet">Cabinet Make...</span>
+                        <span class="pie-label label-glass">Glass Door I...</span>
+                        <span class="pie-label label-carpentry">Carpentry</span>
+                        <span class="pie-label label-sculpture">Esculpture M...</span>
+                        <span class="pie-label label-tiles">Tiles Sitter</span>
+                    </div>
+                </article>
+            </section>
+
+            <section class="admin-records" aria-label="All bookings">
+                <div class="admin-filters">
+                    <label class="admin-search">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.35-4.35M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z"/></svg>
+                        <span class="sr-only">Search bookings</span>
+                        <input type="search" placeholder="Search bookings..." data-admin-search>
+                    </label>
+                    <label class="admin-status-filter">
+                        <span class="sr-only">Filter by status</span>
+                        <select data-admin-status>
+                            <option value="">All Statuses</option>
+                            <option>Pending Quotation</option>
+                            <option>Waiting for Payment</option>
+                            <option>Booking Confirmed</option>
+                            <option>Completed</option>
+                            <option>Cancelled</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="admin-table-shell">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Booking</th>
+                                <th class="admin-wide-column">Customer</th>
+                                <th class="admin-wide-column">Service</th>
+                                <th>Status</th>
+                                <th class="admin-wide-column">Date</th>
+                                <th class="admin-action-column">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in admin_bookings %}
+                            <tr data-admin-row data-search="{{ booking.reference }} {{ booking.customer }} {{ booking.service }}" data-status="{{ booking.status }}">
+                                <td class="admin-reference">{{ booking.reference }}</td>
+                                <td class="admin-wide-column">{{ booking.customer }}</td>
+                                <td class="admin-wide-column">{{ booking.service }}</td>
+                                <td><span class="admin-status status-{{ booking.status_kind }}">{{ booking.status }}</span></td>
+                                <td class="admin-wide-column admin-date">{{ booking.date }}</td>
+                                <td class="admin-action-column">
+                                    <a class="admin-view" href="#" aria-label="View {{ booking.reference }}">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg>
+                                        View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            <tr class="admin-empty" data-admin-empty hidden>
+                                <td colspan="6">No bookings match your filters.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    {% include "base/includes/footer.html" %}
+</body>
+</html>

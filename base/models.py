@@ -4,6 +4,7 @@
 # # Create your models here.
 # # bandoquillosarim@gmail.com
 # # Password@123
+# # https://nifty-build-fix-pro.base44.app
 
 # class AuthenticatedUser(AbstractUser):
 #     # password already exists in AbstractUser

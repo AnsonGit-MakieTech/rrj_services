@@ -9,6 +9,10 @@
     const fileInput = document.querySelector("[data-file-input]");
     const attachmentList = document.querySelector("[data-attachment-list]");
     const paymentSelect = document.querySelector("[data-payment-select]");
+    const adminSearch = document.querySelector("[data-admin-search]");
+    const adminStatus = document.querySelector("[data-admin-status]");
+    const adminRows = document.querySelectorAll("[data-admin-row]");
+    const adminEmpty = document.querySelector("[data-admin-empty]");
 
     function closeAccountMenu() {
         accountToggle.setAttribute("aria-expanded", "false");
@@ -207,6 +211,29 @@
                 closePaymentSelect();
             }
         });
+    }
+
+    if (adminSearch && adminStatus && adminEmpty) {
+        function filterAdminRows() {
+            const searchTerm = adminSearch.value.toLowerCase().trim();
+            const status = adminStatus.value;
+            let matches = 0;
+
+            adminRows.forEach(function (row) {
+                const matchesSearch = row.dataset.search.toLowerCase().includes(searchTerm);
+                const matchesStatus = !status || row.dataset.status === status;
+                const isVisible = matchesSearch && matchesStatus;
+                row.hidden = !isVisible;
+                if (isVisible) {
+                    matches += 1;
+                }
+            });
+
+            adminEmpty.hidden = matches !== 0;
+        }
+
+        adminSearch.addEventListener("input", filterAdminRows);
+        adminStatus.addEventListener("change", filterAdminRows);
     }
 
 }());

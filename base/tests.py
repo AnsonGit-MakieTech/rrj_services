@@ -22,6 +22,7 @@ class HomePageTests(TestCase):
         self.assertContains(response, "site-header-admin")
         self.assertContains(response, "Admin")
         self.assertContains(response, "Settings")
+        self.assertContains(response, reverse("admin_dashboard"))
 
     def test_customer_navigation_hides_admin_items(self):
         with patch("base.views.IS_ADMIN", False):
@@ -53,6 +54,29 @@ class AuthenticationPageTests(TestCase):
         self.assertNotContains(response, 'type="password"')
         self.assertContains(response, reverse("login"))
         self.assertContains(response, "assets/rrj-logo.png")
+
+
+class AdminDashboardPageTests(TestCase):
+    def test_admin_dashboard_renders_metrics_charts_and_bookings_when_enabled(self):
+        with patch("base.views.IS_ADMIN", True):
+            response = self.client.get(reverse("admin_dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Admin Dashboard")
+        self.assertContains(response, "Total Bookings")
+        self.assertContains(response, "PHP 6,877")
+        self.assertContains(response, "Monthly Bookings")
+        self.assertContains(response, "Most Requested Services")
+        self.assertContains(response, "BK-MPNKEBSO")
+        self.assertContains(response, "data-admin-search")
+        self.assertContains(response, "site-header-admin")
+        self.assertContains(response, f'class="active" href="{reverse("admin_dashboard")}"')
+
+    def test_admin_dashboard_is_not_available_when_toggle_is_disabled(self):
+        with patch("base.views.IS_ADMIN", False):
+            response = self.client.get(reverse("admin_dashboard"))
+
+        self.assertEqual(response.status_code, 404)
 
 
 class ServicesPageTests(TestCase):

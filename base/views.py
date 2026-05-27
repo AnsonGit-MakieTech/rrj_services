@@ -5,6 +5,27 @@ from django.shortcuts import render
 # Change this value to True to preview the administrator navigation.
 IS_ADMIN = True
 
+ADMIN_STATS = [
+    {"label": "Total Bookings", "value": "11", "kind": "bookings"},
+    {"label": "Pending Quotations", "value": "1", "kind": "pending"},
+    {"label": "Active Services", "value": "1", "kind": "active"},
+    {"label": "Revenue", "value": "PHP 6,877", "kind": "revenue"},
+]
+
+ADMIN_BOOKINGS = [
+    {"reference": "BK-MPNKEBSO", "customer": "Makie Tech", "service": "Cabinet Maker/Design", "status": "Waiting for Payment", "status_kind": "payment", "date": "May 27, 2026"},
+    {"reference": "BK-MPNJET1G", "customer": "Makie Tech", "service": "Glass Door Install", "status": "Completed", "status_kind": "completed", "date": "May 27, 2026"},
+    {"reference": "BK-MPL6A5T9", "customer": "Sarim Bandoquillo", "service": "Re Painting", "status": "Completed", "status_kind": "completed", "date": "May 25, 2026"},
+    {"reference": "BK-MPL5LPV3", "customer": "Makie Tech", "service": "Carpentry", "status": "Cancelled", "status_kind": "cancelled", "date": "May 25, 2026"},
+    {"reference": "BK-MPKPRA6C", "customer": "Makie Tech", "service": "Esculpture Maker", "status": "Booking Confirmed", "status_kind": "confirmed", "date": "May 25, 2026"},
+    {"reference": "BK-MPKL43WI", "customer": "Sarim Bandoquillo", "service": "Tiles Sitter", "status": "Completed", "status_kind": "completed", "date": "May 25, 2026"},
+    {"reference": "BK-MPJYQAK1", "customer": "Sallo Uno", "service": "Re Painting", "status": "Completed", "status_kind": "completed", "date": "May 24, 2026"},
+    {"reference": "BK-MPJXPK6K", "customer": "Sallo Uno", "service": "Re Painting", "status": "Completed", "status_kind": "completed", "date": "May 24, 2026"},
+    {"reference": "BK-MPJWQ0SE", "customer": "Sallo Uno", "service": "Re Painting", "status": "Pending Quotation", "status_kind": "pending", "date": "May 24, 2026"},
+    {"reference": "BK-MPJW2JFC", "customer": "Sallo Uno", "service": "Re Painting", "status": "Completed", "status_kind": "completed", "date": "May 24, 2026"},
+    {"reference": "BK-MPJVLI78", "customer": "Sallo Uno", "service": "Re Painting", "status": "Completed", "status_kind": "completed", "date": "May 24, 2026"},
+]
+
 SERVICES = [
     {
         "name": "Condo Renovation",
@@ -273,6 +294,8 @@ def _bookings_for_dashboard():
 def _display_name(request):
     if request.user.is_authenticated:
         return request.user.get_full_name() or request.user.username
+    if IS_ADMIN:
+        return "Sallo Uno"
     return "Makie Tech"
 
 
@@ -295,6 +318,23 @@ def login_page(request):
 
 def register_page(request):
     return render(request, "base/register.html")
+
+
+def admin_dashboard(request):
+    if not IS_ADMIN:
+        raise Http404("Admin dashboard not available")
+
+    return render(
+        request,
+        "base/admin.html",
+        {
+            "active_page": "admin",
+            "display_name": _display_name(request),
+            "is_admin": IS_ADMIN,
+            "admin_stats": ADMIN_STATS,
+            "admin_bookings": ADMIN_BOOKINGS,
+        },
+    )
 
 
 def services(request):

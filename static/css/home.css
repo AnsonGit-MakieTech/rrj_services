@@ -2415,6 +2415,174 @@ body.modal-open {
     width: 18px;
 }
 
+.admin-quotation-form h2,
+.admin-payment-verification h2,
+.admin-status-update h2 {
+    margin-bottom: 18px;
+}
+
+.admin-quotation-fields {
+    display: grid;
+    gap: 17px 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-quotation-fields label {
+    color: var(--color-text-primary);
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
+    font-weight: 500;
+    gap: 6px;
+}
+
+.admin-quotation-fields input,
+.admin-quotation-fields textarea {
+    background: var(--color-surface);
+    border: 1px solid #d7dfec;
+    border-radius: 11px;
+    color: var(--color-text-primary);
+    font: inherit;
+    font-size: 14px;
+    outline: 0;
+    padding: 0 12px;
+}
+
+.admin-quotation-fields input {
+    height: 38px;
+}
+
+.admin-quotation-fields textarea {
+    min-height: 60px;
+    padding: 10px 12px;
+    resize: vertical;
+}
+
+.admin-quotation-fields input:focus,
+.admin-quotation-fields textarea:focus {
+    border-color: var(--color-brand-violet);
+    box-shadow: 0 0 0 3px rgba(96, 24, 240, .09);
+}
+
+.admin-primary-action {
+    background: var(--color-brand-violet);
+    border-radius: 11px;
+    color: var(--color-surface);
+    font-size: 13px;
+    font-weight: 600;
+    height: 39px;
+    margin-top: 18px;
+    padding: 0 16px;
+}
+
+.admin-primary-action:hover {
+    background: var(--color-brand-indigo);
+}
+
+.admin-payment-grid {
+    display: grid;
+    gap: 14px 28px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0 0 3px;
+}
+
+.admin-payment-grid dt {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.admin-payment-grid dd {
+    color: var(--color-text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    margin: 1px 0 0;
+}
+
+.admin-payment-receipt {
+    border-radius: 11px;
+    display: block;
+    height: 240px;
+    margin-top: 3px;
+    object-fit: cover;
+    width: min(318px, 100%);
+}
+
+.admin-payment-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.admin-payment-actions button {
+    align-items: center;
+    border: 1px solid;
+    border-radius: 11px;
+    display: inline-flex;
+    font-size: 13px;
+    font-weight: 600;
+    gap: 7px;
+    height: 38px;
+    padding: 0 15px;
+}
+
+.admin-payment-actions svg {
+    height: 16px;
+    width: 16px;
+}
+
+.admin-approve {
+    background: #12a34a;
+    border-color: #12a34a;
+    color: #fff;
+}
+
+.admin-approve:hover {
+    background: #09853b;
+    border-color: #09853b;
+}
+
+.admin-reject {
+    background: var(--color-surface);
+    border-color: #ef4454;
+    color: #df3548;
+}
+
+.admin-reject:hover {
+    background: #fff3f4;
+}
+
+.admin-status-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.admin-status-actions button {
+    background: var(--color-surface);
+    border: 1px solid #d7dfec;
+    border-radius: 11px;
+    font-size: 13px;
+    font-weight: 500;
+    height: 38px;
+    padding: 0 16px;
+}
+
+.admin-status-actions button:hover {
+    border-color: var(--color-brand-violet);
+    color: var(--color-brand-violet);
+}
+
+.admin-messages-empty {
+    justify-content: space-between;
+}
+
+.admin-messages-empty > p {
+    color: #64748b;
+    font-size: 13px;
+    margin: auto 0;
+    text-align: center;
+}
+
 .sr-only {
     border: 0;
     clip: rect(0, 0, 0, 0);
@@ -3455,6 +3623,23 @@ body.modal-open {
 
     .payment-grid {
         gap: 17px 16px;
+    }
+
+    .admin-quotation-fields {
+        gap: 17px 16px;
+    }
+
+    .admin-payment-receipt {
+        height: auto;
+        width: 100%;
+    }
+
+    .admin-payment-actions {
+        gap: 10px;
+    }
+
+    .admin-payment-actions button {
+        padding: 0 12px;
     }
 
     .booking-form-page {

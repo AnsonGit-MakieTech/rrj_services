@@ -7,6 +7,7 @@ urlpatterns = [
     path("login/", views.login_page, name="login"),
     path("register/", views.register_page, name="register"),
     path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
+    path("admin-dashboard/bookings/<str:reference>/", views.admin_view_booking, name="admin_view_booking"),
     path("settings/", views.service_settings, name="service_settings"),
     path("services/", views.services, name="services"),
     path("my-bookings/", views.my_bookings, name="my_bookings"),

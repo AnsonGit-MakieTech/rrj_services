@@ -13,7 +13,7 @@ ADMIN_STATS = [
 ]
 
 ADMIN_BOOKINGS = [
-    {"reference": "BK-MPNKEBSO", "customer": "Makie Tech", "service": "Cabinet Maker/Design", "status": "Waiting for Payment", "status_kind": "payment", "date": "May 27, 2026"},
+    {"reference": "BK-MPNPN4DR", "customer": "Erijerehua Guaguitin", "service": "Shower Enclosure Install", "status": "Booking Confirmed", "status_kind": "confirmed", "date": "May 27, 2026"},
     {"reference": "BK-MPNJET1G", "customer": "Makie Tech", "service": "Glass Door Install", "status": "Completed", "status_kind": "completed", "date": "May 27, 2026"},
     {"reference": "BK-MPL6A5T9", "customer": "Sarim Bandoquillo", "service": "Re Painting", "status": "Completed", "status_kind": "completed", "date": "May 25, 2026"},
     {"reference": "BK-MPL5LPV3", "customer": "Makie Tech", "service": "Carpentry", "status": "Cancelled", "status_kind": "cancelled", "date": "May 25, 2026"},
@@ -25,6 +25,30 @@ ADMIN_BOOKINGS = [
     {"reference": "BK-MPJW2JFC", "customer": "Sallo Uno", "service": "Re Painting", "status": "Completed", "status_kind": "completed", "date": "May 24, 2026"},
     {"reference": "BK-MPJVLI78", "customer": "Sallo Uno", "service": "Re Painting", "status": "Completed", "status_kind": "completed", "date": "May 24, 2026"},
 ]
+
+ADMIN_BOOKING_DETAILS = {
+    "BK-MPNPN4DR": {
+        "email": "astigpree@gmail.com",
+        "phone": "0282822",
+        "location": "fb vm",
+        "sqm": "4646",
+        "urgency": "High",
+        "schedule": "2026-05-27",
+        "description": "bddbdb",
+        "quotation": {
+            "materials": "PHP 232",
+            "labor": "PHP 32",
+            "total": "PHP 323",
+            "notes": "fdsafdds",
+        },
+        "payment": {
+            "amount": "PHP 56",
+            "method": "Bank Transfer",
+            "reference": "gbfb",
+            "receipt_url": "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=640&q=80",
+        },
+    },
+}
 
 ADMIN_SERVICES = [
     {"name": "Baseboard Maker", "price": "PHP 3,000 - PHP 20,000", "min_price": "3000", "max_price": "20000", "description": "Custom baseboard molding design and installation for a polished finish."},
@@ -194,7 +218,13 @@ BOOKINGS = [
 # Available values: pending_quotation, quotation_sent, waiting_for_payment,
 # payment_verification, booking_confirmed, scheduled, in_progress, completed,
 # cancelled.
-SIMULATED_VIEW_BOOKING_STATUS = "waiting_for_payment"
+SIMULATED_VIEW_BOOKING_STATUS = "payment_verification"
+
+# Change this value and refresh an admin booking detail page to preview its workflow.
+# Available values: pending_quotation, quotation_sent, waiting_for_payment,
+# payment_verification, booking_confirmed, scheduled, in_progress, completed.
+SIMULATED_ADMIN_BOOKING_STATUS = "completed"
+SIMULATED_ADMIN_BOOKING_REFERENCE = "BK-MPNPN4DR"
 
 PROGRESS_STEPS = [
     "Pending Quotation",
@@ -282,12 +312,129 @@ BOOKING_VIEW_STATES = {
     },
 }
 
+ADMIN_BOOKING_STATES = {
+    "pending_quotation": {
+        "label": "Pending Quotation",
+        "variant": "pending",
+        "status_kind": "pending",
+        "step": 0,
+        "show_send_quotation": True,
+        "show_quotation": False,
+        "show_payment_verification": False,
+        "show_status_actions": False,
+        "status_actions": [],
+    },
+    "quotation_sent": {
+        "label": "Quotation Sent",
+        "variant": "sent",
+        "status_kind": "pending",
+        "step": 1,
+        "show_send_quotation": False,
+        "show_quotation": True,
+        "show_payment_verification": False,
+        "show_status_actions": False,
+        "status_actions": [],
+    },
+    "waiting_for_payment": {
+        "label": "Waiting for Payment",
+        "variant": "payment",
+        "status_kind": "payment",
+        "step": 2,
+        "show_send_quotation": False,
+        "show_quotation": True,
+        "show_payment_verification": False,
+        "show_status_actions": False,
+        "status_actions": [],
+    },
+    "payment_verification": {
+        "label": "Payment Verification",
+        "variant": "payment",
+        "status_kind": "payment",
+        "step": 3,
+        "show_send_quotation": False,
+        "show_quotation": True,
+        "show_payment_verification": True,
+        "show_status_actions": False,
+        "status_actions": [],
+    },
+    "booking_confirmed": {
+        "label": "Booking Confirmed",
+        "variant": "active",
+        "status_kind": "confirmed",
+        "step": 4,
+        "show_send_quotation": False,
+        "show_quotation": True,
+        "show_payment_verification": False,
+        "show_status_actions": True,
+        "status_actions": ["Scheduled", "In Progress", "Completed"],
+    },
+    "scheduled": {
+        "label": "Scheduled",
+        "variant": "active",
+        "status_kind": "confirmed",
+        "step": 5,
+        "show_send_quotation": False,
+        "show_quotation": True,
+        "show_payment_verification": False,
+        "show_status_actions": True,
+        "status_actions": ["In Progress", "Completed"],
+    },
+    "in_progress": {
+        "label": "In Progress",
+        "variant": "active",
+        "status_kind": "confirmed",
+        "step": 6,
+        "show_send_quotation": False,
+        "show_quotation": True,
+        "show_payment_verification": False,
+        "show_status_actions": True,
+        "status_actions": ["Completed"],
+    },
+    "completed": {
+        "label": "Completed",
+        "variant": "completed",
+        "status_kind": "completed",
+        "step": 7,
+        "show_send_quotation": False,
+        "show_quotation": True,
+        "show_payment_verification": False,
+        "show_status_actions": False,
+        "status_actions": [],
+    },
+    "cancelled": {
+        "label": "Cancelled",
+        "variant": "cancelled",
+        "status_kind": "cancelled",
+        "step": None,
+        "show_send_quotation": False,
+        "show_quotation": True,
+        "show_payment_verification": False,
+        "show_status_actions": False,
+        "status_actions": [],
+    },
+}
+
 
 def _simulated_state():
     return BOOKING_VIEW_STATES.get(
         SIMULATED_VIEW_BOOKING_STATUS,
         BOOKING_VIEW_STATES["pending_quotation"],
     )
+
+
+def _simulated_admin_state():
+    return ADMIN_BOOKING_STATES.get(
+        SIMULATED_ADMIN_BOOKING_STATUS,
+        ADMIN_BOOKING_STATES["pending_quotation"],
+    )
+
+
+def _admin_state_for_booking(booking):
+    if booking["reference"] == SIMULATED_ADMIN_BOOKING_REFERENCE:
+        return _simulated_admin_state()
+
+    state_name = booking["status"].lower().replace(" ", "_")
+    return ADMIN_BOOKING_STATES.get(state_name, ADMIN_BOOKING_STATES["pending_quotation"])
 
 
 def _progress_steps(state):
@@ -311,6 +458,48 @@ def _bookings_for_dashboard():
     if bookings:
         bookings[0]["status"] = _simulated_state()["label"]
     return bookings
+
+
+def _admin_bookings_for_dashboard():
+    state = _simulated_admin_state()
+    bookings = [booking.copy() for booking in ADMIN_BOOKINGS]
+    for booking in bookings:
+        if booking["reference"] == SIMULATED_ADMIN_BOOKING_REFERENCE:
+            booking["status"] = state["label"]
+            booking["status_kind"] = state["status_kind"]
+    return bookings
+
+
+def _admin_booking_detail(reference):
+    booking = next((row.copy() for row in ADMIN_BOOKINGS if row["reference"] == reference), None)
+    if booking is None:
+        return None
+
+    booking.update(
+        {
+            "email": "-",
+            "phone": "-",
+            "location": "-",
+            "sqm": "-",
+            "urgency": "Standard",
+            "schedule": booking["date"],
+            "description": "",
+            "quotation": {
+                "materials": "PHP 0",
+                "labor": "PHP 0",
+                "total": "PHP 0",
+                "notes": "Quotation details will appear here.",
+            },
+            "payment": {
+                "amount": "PHP 0",
+                "method": "-",
+                "reference": "-",
+                "receipt_url": "",
+            },
+        }
+    )
+    booking.update(ADMIN_BOOKING_DETAILS.get(reference, {}))
+    return booking
 
 
 def _display_name(request):
@@ -354,7 +543,32 @@ def admin_dashboard(request):
             "display_name": _display_name(request),
             "is_admin": IS_ADMIN,
             "admin_stats": ADMIN_STATS,
-            "admin_bookings": ADMIN_BOOKINGS,
+            "admin_bookings": _admin_bookings_for_dashboard(),
+        },
+    )
+
+
+def admin_view_booking(request, reference):
+    if not IS_ADMIN:
+        raise Http404("Admin booking not available")
+
+    booking = _admin_booking_detail(reference)
+    if booking is None:
+        raise Http404("Booking not found")
+
+    state = _admin_state_for_booking(booking)
+    booking["status"] = state["label"]
+
+    return render(
+        request,
+        "base/admin_view_booking.html",
+        {
+            "active_page": "admin",
+            "display_name": _display_name(request),
+            "is_admin": IS_ADMIN,
+            "booking": booking,
+            "state": state,
+            "progress_steps": _progress_steps(state),
         },
     )
 

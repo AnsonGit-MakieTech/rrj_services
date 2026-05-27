@@ -130,7 +130,7 @@
                                 <td><span class="admin-status status-{{ booking.status_kind }}">{{ booking.status }}</span></td>
                                 <td class="admin-wide-column admin-date">{{ booking.date }}</td>
                                 <td class="admin-action-column">
-                                    <a class="admin-view" href="#" aria-label="View {{ booking.reference }}">
+                                    <a class="admin-view" href="{% url 'admin_view_booking' booking.reference %}" aria-label="View {{ booking.reference }}">
                                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg>
                                         View
                                     </a>

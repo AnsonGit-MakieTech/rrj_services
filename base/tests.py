@@ -68,7 +68,8 @@ class AdminDashboardPageTests(TestCase):
         self.assertContains(response, "PHP 6,877")
         self.assertContains(response, "Monthly Bookings")
         self.assertContains(response, "Most Requested Services")
-        self.assertContains(response, "BK-MPNKEBSO")
+        self.assertContains(response, "BK-MPNPN4DR")
+        self.assertContains(response, "Erijerehua Guaguitin")
         self.assertContains(response, "data-admin-search")
         self.assertContains(response, "data-admin-status-select")
         self.assertContains(response, "Quotation Sent")
@@ -76,10 +77,79 @@ class AdminDashboardPageTests(TestCase):
         self.assertContains(response, "In Progress")
         self.assertContains(response, "site-header-admin")
         self.assertContains(response, f'class="active" href="{reverse("admin_dashboard")}"')
+        self.assertContains(response, reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
 
     def test_admin_dashboard_is_not_available_when_toggle_is_disabled(self):
         with patch("base.views.IS_ADMIN", False):
             response = self.client.get(reverse("admin_dashboard"))
+
+        self.assertEqual(response.status_code, 404)
+
+
+class AdminViewBookingPageTests(TestCase):
+    def test_confirmed_booking_renders_admin_controls_when_enabled(self):
+        with patch("base.views.IS_ADMIN", True), patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "booking_confirmed"):
+            response = self.client.get(reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Shower Enclosure Install")
+        self.assertContains(response, "Erijerehua Guaguitin")
+        self.assertContains(response, "Booking Confirmed")
+        self.assertContains(response, "Update Status")
+        self.assertContains(response, "Scheduled")
+        self.assertContains(response, "Messages")
+        self.assertContains(response, "Progress")
+        self.assertContains(response, f'class="active" href="{reverse("admin_dashboard")}"')
+
+    def test_pending_quotation_simulation_displays_quotation_form(self):
+        with patch("base.views.IS_ADMIN", True), patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "pending_quotation"):
+            response = self.client.get(reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
+
+        self.assertContains(response, "Pending Quotation")
+        self.assertContains(response, "Send Quotation")
+        self.assertContains(response, "Materials Cost")
+        self.assertContains(response, 'type="number" name="materials_cost"')
+        self.assertContains(response, 'type="number" name="labor_cost"')
+        self.assertContains(response, 'type="number" name="total_amount"')
+        self.assertNotContains(response, 'aria-label="Payment verification"')
+
+    def test_payment_verification_simulation_displays_review_actions(self):
+        with patch("base.views.IS_ADMIN", True), patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "payment_verification"):
+            response = self.client.get(reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
+
+        self.assertContains(response, "Payment Verification")
+        self.assertContains(response, "Approve Payment")
+        self.assertContains(response, "Reject Payment")
+        self.assertContains(response, "Customer payment receipt")
+
+    def test_scheduled_simulation_only_displays_remaining_status_actions(self):
+        with patch("base.views.IS_ADMIN", True), patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "scheduled"):
+            response = self.client.get(reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
+
+        self.assertContains(response, "Update Status")
+        self.assertContains(response, "In Progress")
+        self.assertContains(response, "Completed")
+        self.assertNotContains(response, '<button type="button">Scheduled</button>')
+
+    def test_in_progress_simulation_only_displays_completed_action(self):
+        with patch("base.views.IS_ADMIN", True), patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "in_progress"):
+            response = self.client.get(reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
+
+        self.assertContains(response, "Update Status")
+        self.assertContains(response, '<button type="button">Completed</button>')
+        self.assertNotContains(response, '<button type="button">Scheduled</button>')
+        self.assertNotContains(response, '<button type="button">In Progress</button>')
+
+    def test_existing_completed_dashboard_booking_keeps_its_status(self):
+        with patch("base.views.IS_ADMIN", True):
+            response = self.client.get(reverse("admin_view_booking", args=["BK-MPNJET1G"]))
+
+        self.assertContains(response, "Completed")
+        self.assertNotContains(response, "Update Status")
+
+    def test_admin_booking_page_is_not_available_when_toggle_is_disabled(self):
+        with patch("base.views.IS_ADMIN", False):
+            response = self.client.get(reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
 
         self.assertEqual(response.status_code, 404)
 

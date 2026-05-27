@@ -1,0 +1,262 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Home | RRJ's Maintenance Services</title>
+    <meta name="description" content="Book professional construction and maintenance services with RRJ's Maintenance Services.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <script src="{% static 'js/home.js' %}" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-inner">
+            <a class="brand" href="#home" aria-label="RRJ's Maintenance Services home">
+                <img src="{% static 'assets/rrj-logo-icon.png' %}" alt="" class="brand-icon">
+                <span>RRJ's Maintenance Services</span>
+            </a>
+
+            <nav class="desktop-nav" aria-label="Primary navigation">
+                <a class="active" href="#home">Home</a>
+                <a href="#services">Services</a>
+                <a href="#bookings">My Bookings</a>
+            </nav>
+
+            <div class="header-actions">
+                <button
+                    type="button"
+                    class="account-toggle"
+                    data-account-toggle
+                    aria-expanded="false"
+                    aria-controls="account-menu"
+                >
+                    <svg class="user-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z"/>
+                    </svg>
+                    <span class="account-label">{{ display_name }}</span>
+                    <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="m6 9 6 6 6-6"/>
+                    </svg>
+                </button>
+
+                <div class="account-menu" id="account-menu" data-account-menu hidden>
+                    <a href="#bookings">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M9 5h6m-7 3h8M8 3h8a2 2 0 0 1 2 2v15H6V5a2 2 0 0 1 2-2Zm2 9h4m-4 4h4"/>
+                        </svg>
+                        My Bookings
+                    </a>
+                    <a href="#">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M10 17 15 12l-5-5m5 5H3m10-9h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/>
+                        </svg>
+                        Logout
+                    </a>
+                </div>
+
+                <button
+                    type="button"
+                    class="nav-toggle"
+                    data-nav-toggle
+                    aria-expanded="false"
+                    aria-controls="mobile-navigation"
+                    aria-label="Open navigation"
+                >
+                    <svg class="menu-open-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                    <svg class="menu-close-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6 6 18 18M18 6 6 18"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <nav class="mobile-navigation" id="mobile-navigation" data-mobile-navigation aria-label="Mobile navigation" hidden>
+            <a class="active" href="#home">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m3 11 9-8 9 8v10h-6v-6H9v6H3V11Z"/>
+                </svg>
+                Home
+            </a>
+            <a href="#services">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m14.7 6.3 3-3a4.3 4.3 0 0 1-5.5 5.5l-7.9 7.9a2.1 2.1 0 0 0 3 3l7.9-7.9a4.3 4.3 0 0 1 5.5-5.5l-3 3"/>
+                </svg>
+                Services
+            </a>
+            <a href="#bookings">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9 5h6m-7 3h8M8 3h8a2 2 0 0 1 2 2v15H6V5a2 2 0 0 1 2-2Zm2 9h4m-4 4h4"/>
+                </svg>
+                My Bookings
+            </a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero" id="home">
+            <div class="container">
+                <div class="hero-copy">
+                    <p class="trust-badge">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12Zm-3 0-1 6 4-2 4 2-1-6"/>
+                        </svg>
+                        Trusted by 500+ clients
+                    </p>
+                    <h1>Build Better.<br><span>Maintain Smarter.</span></h1>
+                    <p class="hero-description">
+                        Professional construction and maintenance services at your fingertips.
+                        Book online, get detailed quotations, and track your project in real time.
+                    </p>
+                    <div class="hero-buttons">
+                        <a class="button button-primary" href="#services">
+                            Book a Service
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+                        </a>
+                        <a class="button button-secondary" href="#services">Browse Services</a>
+                    </div>
+                    <div class="trust-points">
+                        <div>
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22S4 18 4 11V5l8-3 8 3v6c0 7-8 11-8 11Z"/></svg>
+                            <span>Licensed &amp; Insured</span>
+                        </div>
+                        <div>
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v5l3.5 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/></svg>
+                            <span>On-Time Delivery</span>
+                        </div>
+                        <div>
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12Zm-3 0-1 6 4-2 4 2-1-6"/></svg>
+                            <span>Quality Guarantee</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="services section" id="services">
+            <div class="container">
+                <div class="section-heading">
+                    <h2>Our Services</h2>
+                    <p>Complete construction and maintenance solutions for residential and commercial properties.</p>
+                </div>
+
+                <div class="service-grid">
+                    {% for service in services %}
+                    <article class="service-card">
+                        <div class="service-image">
+                            {% if service.icon == "building" %}
+                            <svg viewBox="0 0 72 72" aria-hidden="true"><path d="M16 62V10h40v52H16Z"/><path d="M25 20h8v8h-8zm14 0h8v8h-8zM25 34h8v8h-8zm14 0h8v8h-8zM25 48h8v14h-8zm14 0h8v8h-8z"/></svg>
+                            {% elif service.icon == "home" %}
+                            <svg viewBox="0 0 72 72" aria-hidden="true"><path d="m10 33 26-23 26 23"/><path d="M16 29v31h40V29M29 60V43h14v17"/></svg>
+                            {% elif service.icon == "cabinet" %}
+                            <svg viewBox="0 0 72 72" aria-hidden="true"><path d="M17 12h38v48H17V12Zm0 22h38M36 12v48"/><path d="M29 26h2m10 0h2M29 47h2m10 0h2"/></svg>
+                            {% elif service.icon == "partition" %}
+                            <svg viewBox="0 0 72 72" aria-hidden="true"><path d="m14 20 25-10 19 8v37L34 63l-20-8V20Z"/><path d="M34 63V27l24-9M14 20l20 7"/><path d="M43 39h3"/></svg>
+                            {% elif service.icon == "leaf" %}
+                            <svg viewBox="0 0 72 72" aria-hidden="true"><path d="M15 59c9-17 20-26 42-42M22 48C10 28 29 12 57 14c2 28-15 46-35 34Z"/><path d="M30 38h15M38 30v15"/></svg>
+                            {% elif service.icon == "paint" %}
+                            <svg viewBox="0 0 72 72" aria-hidden="true"><path d="M36 10a26 26 0 1 0 0 52c6 0 8-4 8-8 0-3-2-5-2-8 0-4 3-6 7-6h7c4 0 6-3 6-7C62 20 50 10 36 10Z"/><path d="M24 27h.1M35 21h.1M47 27h.1M26 40h.1"/></svg>
+                            {% elif service.icon == "shower" %}
+                            <svg viewBox="0 0 72 72" aria-hidden="true"><path d="M20 26a14 14 0 0 1 28-2v35"/><path d="M15 27h26L15 53V27Z"/><path d="M20 57v3m7-9v5m7-11v5m7-11v5"/></svg>
+                            {% else %}
+                            <svg viewBox="0 0 72 72" aria-hidden="true"><path d="M20 10h32v52H20V10Zm6 7h20v38H26V17Z"/><path d="M39 37h3M15 62h42"/></svg>
+                            {% endif %}
+                        </div>
+                        <div class="service-body">
+                            <h3>{{ service.name }}</h3>
+                            <p>{{ service.description }}</p>
+                            <strong>{{ service.price }}</strong>
+                            <a class="service-button" href="#bookings">
+                                Book Service
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+                            </a>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+                <a class="all-services" href="#services">
+                    View All Services
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+                </a>
+            </div>
+        </section>
+
+        <section class="reasons section">
+            <div class="container">
+                <h2>Why Choose RRJ?</h2>
+                <div class="reason-grid">
+                    <article>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m22 4-10 10.01-3-3"/></svg>
+                        <h3>Expert Craftsmen</h3>
+                        <p>Licensed and experienced professionals with years of industry expertise.</p>
+                    </article>
+                    <article>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m22 4-10 10.01-3-3"/></svg>
+                        <h3>Transparent Pricing</h3>
+                        <p>Detailed quotations with materials breakdown and no hidden charges.</p>
+                    </article>
+                    <article>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m22 4-10 10.01-3-3"/></svg>
+                        <h3>Real-Time Tracking</h3>
+                        <p>Monitor your project status online from booking to completion.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta" id="bookings">
+            <div class="container cta-content">
+                <h2>Ready to Start Your Project?</h2>
+                <p>Get a free quotation today. Our team is ready to help you build and maintain your dream space.</p>
+                <a class="button button-primary" href="#">
+                    Book Now
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+                </a>
+            </div>
+        </section>
+
+        <section class="contact-cards" aria-label="Contact details">
+            <div class="container contact-grid">
+                <article>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l.7 3a2 2 0 0 1-.6 1.9L7.9 9.9a16 16 0 0 0 6.2 6.2l1.3-1.3a2 2 0 0 1 1.9-.6l3 .7a2 2 0 0 1 1.7 2Z"/></svg>
+                    <div><span>Call Us</span><strong>+63 912 345 6789</strong></div>
+                </article>
+                <article>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4V4Zm0 2 8 7 8-7"/></svg>
+                    <div><span>Email Us</span><strong>info@rrjservices.com</strong></div>
+                </article>
+                <article>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><path d="M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg>
+                    <div><span>Visit Us</span><strong>Manila, Philippines</strong></div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-grid">
+            <div>
+                <h2>RRJ's Maintenance Services</h2>
+                <p>Professional construction and maintenance services. Quality workmanship guaranteed.</p>
+            </div>
+            <div>
+                <h2>Quick Links</h2>
+                <a href="#services">Our Services</a>
+                <a href="#bookings">Book a Service</a>
+            </div>
+            <div>
+                <h2>Contact</h2>
+                <p>+63 912 345 6789</p>
+                <p>info@rrjservices.com</p>
+                <p>Manila, Philippines</p>
+            </div>
+        </div>
+        <p class="copyright">&copy; 2026 RRJ's Maintenance Services. All rights reserved.</p>
+    </footer>
+</body>
+</html>

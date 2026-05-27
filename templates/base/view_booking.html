@@ -1,0 +1,177 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ booking.reference }} | RRJ's Maintenance Services</title>
+    <meta name="description" content="View your service booking details and project progress.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <script src="{% static 'js/home.js' %}" defer></script>
+</head>
+<body class="view-booking-page">
+    {% include "base/includes/header.html" %}
+
+    <main class="booking-view-page">
+        <div class="booking-view-container">
+            <a class="booking-back" href="{% url 'my_bookings' %}">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/><path d="M9 12h10"/></svg>
+                Back
+            </a>
+
+            <div class="booking-view-layout">
+                <div class="booking-view-main">
+                    <article class="detail-panel booking-summary">
+                        <div class="booking-summary-header">
+                            <div>
+                                <p class="detail-reference">{{ booking.reference }}</p>
+                                <h1>{{ booking.service }}</h1>
+                            </div>
+                            <span class="detail-status status-{{ state.variant }}">{{ booking.status }}</span>
+                        </div>
+
+                        <dl class="detail-grid">
+                            <div><dt>Customer</dt><dd>{{ display_name }}</dd></div>
+                            <div><dt>Email</dt><dd>{{ booking.email }}</dd></div>
+                            <div><dt>Phone</dt><dd>{{ booking.phone }}</dd></div>
+                            <div><dt>Location</dt><dd>{{ booking.location }}</dd></div>
+                            <div><dt>SQM</dt><dd>{{ booking.sqm }}</dd></div>
+                            <div><dt>Urgency</dt><dd>{{ booking.urgency }}</dd></div>
+                            <div><dt>Schedule</dt><dd>{{ booking.schedule }}</dd></div>
+                            {% if booking.description %}
+                            <div class="detail-full"><dt>Description</dt><dd>{{ booking.description }}</dd></div>
+                            {% endif %}
+                        </dl>
+
+                        {% if booking.attachment_url %}
+                        <div class="detail-files">
+                            <p>Uploaded Files</p>
+                            <img src="{{ booking.attachment_url }}" alt="Uploaded project reference" loading="lazy">
+                        </div>
+                        {% endif %}
+                    </article>
+
+                    {% if state.show_quotation %}
+                    <article class="detail-panel quotation-panel">
+                        <h2>Quotation</h2>
+                        <dl class="quotation-grid">
+                            <div><dt>Materials</dt><dd>{{ booking.quotation.materials }}</dd></div>
+                            <div><dt>Labor</dt><dd>{{ booking.quotation.labor }}</dd></div>
+                            <div class="quotation-total"><dt>Total</dt><dd>{{ booking.quotation.total }}</dd></div>
+                        </dl>
+                        <p class="quotation-note">{{ booking.quotation.notes }}</p>
+                        {% if state.allow_decision %}
+                        <div class="quotation-actions">
+                            <button class="decision-button decision-accept" type="button">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 12 3 3 7-7"/><circle cx="12" cy="12" r="9"/></svg>
+                                Accept
+                            </button>
+                            <button class="decision-button decision-reject" type="button">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 9 6 6m0-6-6 6"/><circle cx="12" cy="12" r="9"/></svg>
+                                Reject
+                            </button>
+                        </div>
+                        {% endif %}
+                    </article>
+                    {% endif %}
+
+                    {% if state.show_payment %}
+                    <section class="detail-panel payment-panel" aria-label="Upload payment proof">
+                        <h2>Upload Payment Proof</h2>
+                        <form class="payment-form">
+                            <div class="payment-grid">
+                                <label class="payment-field">Amount Paid *
+                                    <input type="text" name="amount_paid" placeholder="Enter amount">
+                                </label>
+                                <div class="payment-field payment-select" data-payment-select>
+                                    <span class="payment-field-label" id="payment-method-label">Payment Method *</span>
+                                    <input type="hidden" name="payment_method" data-payment-value>
+                                    <button
+                                        class="payment-select-toggle"
+                                        type="button"
+                                        aria-expanded="false"
+                                        aria-haspopup="listbox"
+                                        aria-controls="payment-method-options"
+                                        aria-labelledby="payment-method-label payment-method-value"
+                                        data-payment-select-toggle
+                                    >
+                                        <span class="payment-select-placeholder" id="payment-method-value" data-payment-select-label>Select method</span>
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                                    </button>
+                                    <div class="payment-select-options" id="payment-method-options" role="listbox" aria-labelledby="payment-method-label" data-payment-options hidden>
+                                        <button class="payment-option" type="button" role="option" aria-selected="false" data-payment-option="GCash">
+                                            <span>GCash</span>
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
+                                        </button>
+                                        <button class="payment-option" type="button" role="option" aria-selected="false" data-payment-option="Bank Transfer">
+                                            <span>Bank Transfer</span>
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
+                                        </button>
+                                        <button class="payment-option" type="button" role="option" aria-selected="false" data-payment-option="Maya">
+                                            <span>Maya</span>
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <label class="payment-field detail-full">Reference Number
+                                    <input type="text" name="reference_number" placeholder="Enter transaction reference number">
+                                </label>
+                                <label class="payment-field detail-full">
+                                    <span>Receipt Screenshot *</span>
+                                    <input class="receipt-input" type="file" name="receipt" accept=".jpg,.jpeg,.png" data-receipt-input>
+                                </label>
+                            </div>
+                            <button class="submit-payment" type="button">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0-4 4m4-4 4 4M5 14v5h14v-5"/></svg>
+                                Submit Payment
+                            </button>
+                        </form>
+                    </section>
+                    {% endif %}
+
+                    <section class="detail-panel messages-panel">
+                        <h2>Messages</h2>
+                        <div class="messages-box">
+                            <div class="chat-message">
+                                <strong>{{ display_name }}</strong>
+                                <p>hello po</p>
+                                <time>a few seconds ago</time>
+                            </div>
+                            <form class="message-compose">
+                                <label class="sr-only" for="message">Type a message</label>
+                                <input id="message" type="text" placeholder="Type a message...">
+                                <button type="button" aria-label="Send message">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7Z"/></svg>
+                                </button>
+                            </form>
+                        </div>
+                    </section>
+                </div>
+
+                <aside class="detail-panel progress-panel">
+                    <h2>Progress</h2>
+                    <ol class="progress-list">
+                        {% for step in progress_steps %}
+                        <li class="progress-step phase-{{ step.phase }}">
+                            <span class="progress-dot" aria-hidden="true">
+                                {% if step.phase == "complete" %}
+                                <svg viewBox="0 0 24 24"><path d="m7 12 3 3 7-7"/></svg>
+                                {% elif step.phase == "current" %}
+                                <svg viewBox="0 0 24 24"><path d="M12 7v5l3 2"/></svg>
+                                {% endif %}
+                            </span>
+                            <span>{{ step.label }}</span>
+                        </li>
+                        {% endfor %}
+                    </ol>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    {% include "base/includes/footer.html" %}
+</body>
+</html>

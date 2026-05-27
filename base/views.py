@@ -1,3 +1,4 @@
+from django.http import Http404
 from django.shortcuts import render
 
 
@@ -107,6 +108,19 @@ BOOKINGS = [
         "status": "Pending Quotation",
         "date": "May 25, 2026",
         "description": "",
+        "email": "techmakie@gmail.com",
+        "phone": "-",
+        "location": "-",
+        "sqm": "-",
+        "urgency": "High",
+        "schedule": "-",
+        "attachment_url": "https://images.unsplash.com/photo-1601058268499-e52658b8bb88?auto=format&fit=crop&w=180&q=80",
+        "quotation": {
+            "materials": "PHP 100",
+            "labor": "PHP 400",
+            "total": "PHP 500",
+            "notes": "Quotation prepared after project assessment.",
+        },
     },
     {
         "reference": "BK-MPKPRA6C",
@@ -114,8 +128,143 @@ BOOKINGS = [
         "status": "Pending Quotation",
         "date": "May 25, 2026",
         "description": "fasdfsdf",
+        "email": "techmakie@gmail.com",
+        "phone": "09512213004",
+        "location": "Manila",
+        "sqm": "21",
+        "urgency": "Medium",
+        "schedule": "-",
+        "attachment_url": "",
+        "quotation": {
+            "materials": "PHP 2,500",
+            "labor": "PHP 6,500",
+            "total": "PHP 9,000",
+            "notes": "Final schedule follows confirmed payment.",
+        },
     },
 ]
+
+# Change this value and refresh a booking detail page to preview a workflow state.
+# Available values: pending_quotation, quotation_sent, waiting_for_payment,
+# payment_verification, booking_confirmed, scheduled, in_progress, completed,
+# cancelled.
+SIMULATED_VIEW_BOOKING_STATUS = "waiting_for_payment"
+
+PROGRESS_STEPS = [
+    "Pending Quotation",
+    "Quotation Sent",
+    "Waiting for Payment",
+    "Payment Verification",
+    "Booking Confirmed",
+    "Scheduled",
+    "In Progress",
+    "Completed",
+]
+
+BOOKING_VIEW_STATES = {
+    "pending_quotation": {
+        "label": "Pending Quotation",
+        "variant": "pending",
+        "step": 0,
+        "show_quotation": False,
+        "allow_decision": False,
+        "show_payment": False,
+    },
+    "quotation_sent": {
+        "label": "Quotation Sent",
+        "variant": "sent",
+        "step": 1,
+        "show_quotation": True,
+        "allow_decision": True,
+        "show_payment": False,
+    },
+    "waiting_for_payment": {
+        "label": "Waiting for Payment",
+        "variant": "payment",
+        "step": 2,
+        "show_quotation": True,
+        "allow_decision": False,
+        "show_payment": True,
+    },
+    "payment_verification": {
+        "label": "Payment Verification",
+        "variant": "active",
+        "step": 3,
+        "show_quotation": True,
+        "allow_decision": False,
+        "show_payment": False,
+    },
+    "booking_confirmed": {
+        "label": "Booking Confirmed",
+        "variant": "active",
+        "step": 4,
+        "show_quotation": True,
+        "allow_decision": False,
+        "show_payment": False,
+    },
+    "scheduled": {
+        "label": "Scheduled",
+        "variant": "active",
+        "step": 5,
+        "show_quotation": True,
+        "allow_decision": False,
+        "show_payment": False,
+    },
+    "in_progress": {
+        "label": "In Progress",
+        "variant": "active",
+        "step": 6,
+        "show_quotation": True,
+        "allow_decision": False,
+        "show_payment": False,
+    },
+    "completed": {
+        "label": "Completed",
+        "variant": "completed",
+        "step": 7,
+        "show_quotation": True,
+        "allow_decision": False,
+        "show_payment": False,
+    },
+    "cancelled": {
+        "label": "Cancelled",
+        "variant": "cancelled",
+        "step": None,
+        "show_quotation": True,
+        "allow_decision": False,
+        "show_payment": False,
+    },
+}
+
+
+def _simulated_state():
+    return BOOKING_VIEW_STATES.get(
+        SIMULATED_VIEW_BOOKING_STATUS,
+        BOOKING_VIEW_STATES["pending_quotation"],
+    )
+
+
+def _progress_steps(state):
+    if state["variant"] == "cancelled":
+        return [{"label": "Cancelled", "phase": "cancelled"}]
+
+    steps = []
+    for index, label in enumerate(PROGRESS_STEPS):
+        if index < state["step"]:
+            phase = "complete"
+        elif index == state["step"]:
+            phase = "current"
+        else:
+            phase = "upcoming"
+        steps.append({"label": label, "phase": phase})
+    return steps
+
+
+def _bookings_for_dashboard():
+    bookings = [booking.copy() for booking in BOOKINGS]
+    if bookings:
+        bookings[0]["status"] = _simulated_state()["label"]
+    return bookings
 
 
 def _display_name(request):
@@ -155,7 +304,7 @@ def my_bookings(request):
         {
             "active_page": "bookings",
             "display_name": _display_name(request),
-            "bookings": BOOKINGS,
+            "bookings": _bookings_for_dashboard(),
             "booking_stats": [
                 {"label": "Total", "value": "2", "kind": "total"},
                 {"label": "Pending", "value": "2", "kind": "pending"},
@@ -180,5 +329,26 @@ def add_booking(request):
             "display_name": _display_name(request),
             "services": SERVICES,
             "selected_service": selected_service,
+        },
+    )
+
+
+def view_booking(request, reference):
+    booking = next((booking.copy() for booking in BOOKINGS if booking["reference"] == reference), None)
+    if booking is None:
+        raise Http404("Booking not found")
+
+    state = _simulated_state()
+    booking["status"] = state["label"]
+
+    return render(
+        request,
+        "base/view_booking.html",
+        {
+            "active_page": "bookings",
+            "display_name": _display_name(request),
+            "booking": booking,
+            "state": state,
+            "progress_steps": _progress_steps(state),
         },
     )

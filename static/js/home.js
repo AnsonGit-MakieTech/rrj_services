@@ -8,6 +8,7 @@
     const emptyServices = document.querySelector("[data-empty-services]");
     const fileInput = document.querySelector("[data-file-input]");
     const attachmentList = document.querySelector("[data-attachment-list]");
+    const paymentSelect = document.querySelector("[data-payment-select]");
 
     function closeAccountMenu() {
         accountToggle.setAttribute("aria-expanded", "false");
@@ -125,4 +126,87 @@
             renderAttachments();
         });
     }
+
+    if (paymentSelect) {
+        const selectToggle = paymentSelect.querySelector("[data-payment-select-toggle]");
+        const selectLabel = paymentSelect.querySelector("[data-payment-select-label]");
+        const selectValue = paymentSelect.querySelector("[data-payment-value]");
+        const optionsPanel = paymentSelect.querySelector("[data-payment-options]");
+        const options = Array.from(paymentSelect.querySelectorAll("[data-payment-option]"));
+
+        function closePaymentSelect() {
+            selectToggle.setAttribute("aria-expanded", "false");
+            optionsPanel.hidden = true;
+        }
+
+        function openPaymentSelect() {
+            selectToggle.setAttribute("aria-expanded", "true");
+            optionsPanel.hidden = false;
+        }
+
+        function selectPaymentMethod(option) {
+            const value = option.dataset.paymentOption;
+            selectValue.value = value;
+            selectLabel.textContent = value;
+            selectLabel.classList.remove("payment-select-placeholder");
+            selectLabel.classList.add("payment-select-value");
+            options.forEach(function (currentOption) {
+                currentOption.setAttribute("aria-selected", String(currentOption === option));
+            });
+            closePaymentSelect();
+            selectToggle.focus();
+        }
+
+        selectToggle.addEventListener("click", function () {
+            const isOpen = selectToggle.getAttribute("aria-expanded") === "true";
+            if (isOpen) {
+                closePaymentSelect();
+            } else {
+                openPaymentSelect();
+            }
+        });
+
+        selectToggle.addEventListener("keydown", function (event) {
+            if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                event.preventDefault();
+                openPaymentSelect();
+                options[event.key === "ArrowDown" ? 0 : options.length - 1].focus();
+            }
+        });
+
+        options.forEach(function (option, index) {
+            option.addEventListener("click", function () {
+                selectPaymentMethod(option);
+            });
+
+            option.addEventListener("keydown", function (event) {
+                if (event.key === "Escape") {
+                    event.preventDefault();
+                    closePaymentSelect();
+                    selectToggle.focus();
+                } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                    event.preventDefault();
+                    const direction = event.key === "ArrowDown" ? 1 : -1;
+                    const targetIndex = (index + direction + options.length) % options.length;
+                    options[targetIndex].focus();
+                } else if (event.key === "Home" || event.key === "End") {
+                    event.preventDefault();
+                    options[event.key === "Home" ? 0 : options.length - 1].focus();
+                }
+            });
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!paymentSelect.contains(event.target)) {
+                closePaymentSelect();
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closePaymentSelect();
+            }
+        });
+    }
+
 }());

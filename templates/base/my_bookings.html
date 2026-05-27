@@ -49,7 +49,7 @@
 
                 <div class="booking-list">
                     {% for booking in bookings %}
-                    <article class="booking-card">
+                    <a class="booking-card" href="{% url 'view_booking' booking.reference %}" aria-label="View booking {{ booking.reference }}">
                         <div class="booking-details">
                             <div class="booking-meta">
                                 <span class="booking-reference">{{ booking.reference }}</span>
@@ -60,11 +60,11 @@
                         </div>
                         <div class="booking-date">
                             <time>{{ booking.date }}</time>
-                            <a href="#" aria-label="View {{ booking.service }} booking">
+                            <span class="booking-view-icon" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg>
-                            </a>
+                            </span>
                         </div>
-                    </article>
+                    </a>
                     {% endfor %}
                 </div>
             </div>

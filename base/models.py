@@ -89,13 +89,25 @@
 #     service_description = models.TextField( blank=True, null=True)
 #     problem_description = models.TextField( blank=True, null=True)
 
-#     # Transaction Information
+#     # Quotation Information
 #     material_cost = models.FloatField( default=0.0)
 #     labor_cost = models.FloatField( default=0.0)
 #     total_cost = models.FloatField( default=0.0)
 #     transaction_notes = models.TextField( blank=True, null=True)
 
-
+#     # Payment Information
+#     amount_paid = models.FloatField( default=0.0)
+#     payment_method = models.CharField(
+#         max_length=255 , choices=( 
+#             ('g-cash' , 'G-Cash'),
+#             ('bank-transfer' , 'Bank Transfer'),
+#             ('maya' , 'Maya'),
+#         ),
+#         default='g-cash'
+#     )
+#     reference_number = models.CharField(max_length=255 , blank=True, null=True)
+#     receipt_screenshot = models.ImageField(upload_to='receipts/', blank=True, null=True)
+#     approved_payment = models.BooleanField( default=False)
 
 #     def __str__(self):
 #         return f"{self.pk} - {self.full_name}"

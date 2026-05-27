@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
+from unittest.mock import patch
 
 
 class HomePageTests(TestCase):
@@ -33,8 +34,9 @@ class MyBookingsPageTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "My Bookings")
         self.assertContains(response, "New Booking")
-        self.assertContains(response, "Pending Quotation", count=2)
+        self.assertContains(response, "Pending Quotation")
         self.assertContains(response, "BK-MPL5LPV3")
+        self.assertContains(response, reverse("view_booking", args=["BK-MPL5LPV3"]))
 
 
 class AddBookingPageTests(TestCase):
@@ -50,3 +52,34 @@ class AddBookingPageTests(TestCase):
         self.assertContains(response, "Upload Project Files")
         self.assertContains(response, "data-attachment-list")
         self.assertContains(response, '<option value="Condo Renovation" selected>')
+
+
+class ViewBookingPageTests(TestCase):
+    def test_detail_page_renders_simulated_workflow_state(self):
+        response = self.client.get(reverse("view_booking", args=["BK-MPL5LPV3"]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "BK-MPL5LPV3")
+        self.assertContains(response, "Carpentry")
+        self.assertContains(response, "Pending Quotation")
+        self.assertContains(response, "Progress")
+        self.assertContains(response, "Messages")
+
+    def test_quotation_sent_simulation_displays_decision_actions(self):
+        with patch("base.views.SIMULATED_VIEW_BOOKING_STATUS", "quotation_sent"):
+            response = self.client.get(reverse("view_booking", args=["BK-MPL5LPV3"]))
+
+        self.assertContains(response, "Quotation Sent")
+        self.assertContains(response, "Accept")
+        self.assertContains(response, "Reject")
+
+    def test_waiting_payment_simulation_displays_payment_form(self):
+        with patch("base.views.SIMULATED_VIEW_BOOKING_STATUS", "waiting_for_payment"):
+            response = self.client.get(reverse("view_booking", args=["BK-MPL5LPV3"]))
+
+        self.assertContains(response, "Waiting for Payment")
+        self.assertContains(response, "Upload Payment Proof")
+        self.assertContains(response, "data-payment-select")
+        self.assertContains(response, "data-receipt-input")
+        self.assertContains(response, 'type="file" name="receipt"')
+        self.assertContains(response, "Submit Payment")

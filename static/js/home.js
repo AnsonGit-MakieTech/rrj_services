@@ -6,6 +6,8 @@
     const serviceSearch = document.querySelector("[data-service-search]");
     const serviceCards = document.querySelectorAll("[data-service-card]");
     const emptyServices = document.querySelector("[data-empty-services]");
+    const fileInput = document.querySelector("[data-file-input]");
+    const attachmentList = document.querySelector("[data-attachment-list]");
 
     function closeAccountMenu() {
         accountToggle.setAttribute("aria-expanded", "false");
@@ -66,6 +68,61 @@
             });
 
             emptyServices.hidden = matches !== 0;
+        });
+    }
+
+    if (fileInput && attachmentList) {
+        let selectedFiles = [];
+
+        function syncFileInput() {
+            const transfer = new DataTransfer();
+            selectedFiles.forEach(function (file) {
+                transfer.items.add(file);
+            });
+            fileInput.files = transfer.files;
+        }
+
+        function renderAttachments() {
+            attachmentList.replaceChildren();
+
+            selectedFiles.forEach(function (file, index) {
+                const row = document.createElement("div");
+                row.className = "attachment-item";
+
+                const fileName = document.createElement("span");
+                fileName.textContent = file.name;
+
+                const removeButton = document.createElement("button");
+                removeButton.type = "button";
+                removeButton.className = "remove-attachment";
+                removeButton.setAttribute("aria-label", "Remove " + file.name);
+                removeButton.innerHTML = "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 6 18 18M18 6 6 18\"/></svg>";
+                removeButton.addEventListener("click", function () {
+                    selectedFiles.splice(index, 1);
+                    syncFileInput();
+                    renderAttachments();
+                });
+
+                row.append(fileName, removeButton);
+                attachmentList.appendChild(row);
+            });
+        }
+
+        fileInput.addEventListener("change", function () {
+            const newFiles = Array.from(fileInput.files);
+            newFiles.forEach(function (file) {
+                const duplicate = selectedFiles.some(function (selectedFile) {
+                    return selectedFile.name === file.name
+                        && selectedFile.size === file.size
+                        && selectedFile.lastModified === file.lastModified;
+                });
+
+                if (!duplicate) {
+                    selectedFiles.push(file);
+                }
+            });
+            syncFileInput();
+            renderAttachments();
         });
     }
 }());

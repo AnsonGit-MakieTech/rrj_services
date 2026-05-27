@@ -48,4 +48,5 @@ class AddBookingPageTests(TestCase):
         self.assertContains(response, "Book a Service")
         self.assertContains(response, "Customer Information")
         self.assertContains(response, "Upload Project Files")
+        self.assertContains(response, "data-attachment-list")
         self.assertContains(response, '<option value="Condo Renovation" selected>')

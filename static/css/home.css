@@ -1052,6 +1052,56 @@ svg {
     width: 30px;
 }
 
+.attachment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin-top: 16px;
+}
+
+.attachment-list:empty {
+    display: none;
+}
+
+.attachment-item {
+    align-items: center;
+    background: #f6f7f9;
+    border-radius: 11px;
+    color: var(--color-text-primary);
+    display: flex;
+    font-size: 13px;
+    justify-content: space-between;
+    min-height: 44px;
+    padding: 8px 14px;
+}
+
+.attachment-item span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.remove-attachment {
+    align-items: center;
+    background: transparent;
+    color: var(--color-text-primary);
+    display: inline-flex;
+    flex: 0 0 auto;
+    height: 28px;
+    justify-content: center;
+    margin-left: 12px;
+    width: 28px;
+}
+
+.remove-attachment:hover {
+    color: var(--color-brand-violet);
+}
+
+.remove-attachment svg {
+    height: 15px;
+    width: 15px;
+}
+
 .submit-booking {
     align-items: center;
     background: var(--color-brand-violet);
@@ -1505,6 +1555,15 @@ svg {
         height: 127px;
         padding: 0 14px;
         text-align: center;
+    }
+
+    .attachment-list {
+        margin-top: 15px;
+    }
+
+    .attachment-item {
+        min-height: 44px;
+        padding: 8px 12px;
     }
 
     .submit-booking {

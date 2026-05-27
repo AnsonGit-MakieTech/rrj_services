@@ -94,12 +94,19 @@
                         <legend>Upload Project Files</legend>
                         <p>Upload images or videos of the project for quotation assessment.</p>
                         <label class="file-upload">
-                            <input class="sr-only" type="file" accept=".jpg,.jpeg,.png,.mp4,.mov" multiple>
+                            <input
+                                class="sr-only"
+                                type="file"
+                                accept=".jpg,.jpeg,.png,.mp4,.mov"
+                                multiple
+                                data-file-input
+                            >
                             <svg viewBox="0 0 24 24" aria-hidden="true">
                                 <path d="M12 16V3m0 0L7 8m5-5 5 5M5 14v6h14v-6"/>
                             </svg>
                             <span>Click to upload (JPG, PNG, MP4, MOV)</span>
                         </label>
+                        <div class="attachment-list" data-attachment-list aria-live="polite"></div>
                     </fieldset>
 
                     <button type="button" class="submit-booking">

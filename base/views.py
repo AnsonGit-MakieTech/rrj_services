@@ -26,6 +26,28 @@ ADMIN_BOOKINGS = [
     {"reference": "BK-MPJVLI78", "customer": "Sallo Uno", "service": "Re Painting", "status": "Completed", "status_kind": "completed", "date": "May 24, 2026"},
 ]
 
+ADMIN_SERVICES = [
+    {"name": "Baseboard Maker", "price": "PHP 3,000 - PHP 20,000", "min_price": "3000", "max_price": "20000", "description": "Custom baseboard molding design and installation for a polished finish."},
+    {"name": "Cabinet Maker/Design", "price": "PHP 15,000 - PHP 120,000", "min_price": "15000", "max_price": "120000", "description": "Custom cabinet design and installation for kitchens, bedrooms, and storage areas."},
+    {"name": "Carpentry", "price": "PHP 5,000 - PHP 80,000", "min_price": "5000", "max_price": "80000", "description": "Custom woodworking, furniture repair, and structural carpentry services."},
+    {"name": "Ceiling Cove Lights Designs", "price": "PHP 10,000 - PHP 50,000", "min_price": "10000", "max_price": "50000", "description": "Decorative ceiling cove lighting design and installation for ambient interiors."},
+    {"name": "Condo Renovation", "price": "PHP 50,000 - PHP 500,000", "min_price": "50000", "max_price": "500000", "description": "Complete condo renovation and remodeling services including layout changes and fixtures."},
+    {"name": "Door Install", "price": "PHP 5,000 - PHP 30,000", "min_price": "5000", "max_price": "30000", "description": "Interior and exterior door installation including hardware and finishing."},
+    {"name": "Electrical Services", "price": "PHP 3,000 - PHP 50,000", "min_price": "3000", "max_price": "50000", "description": "Licensed electrical work including wiring, panel upgrades, and fixtures."},
+    {"name": "Esculpture Maker", "price": "PHP 15,000 - PHP 100,000", "min_price": "15000", "max_price": "100000", "description": "Custom decorative sculptures and art pieces for interior and exterior spaces."},
+    {"name": "Glass Door Install", "price": "PHP 10,000 - PHP 45,000", "min_price": "10000", "max_price": "45000", "description": "Tempered glass door installation for offices, shops, and residential spaces."},
+    {"name": "House Renovation", "price": "PHP 100,000 - PHP 1,000,000", "min_price": "100000", "max_price": "1000000", "description": "Full house renovation from structural work to interior finishing and exterior improvements."},
+    {"name": "Landscaping Design", "price": "PHP 20,000 - PHP 200,000", "min_price": "20000", "max_price": "200000", "description": "Professional landscape design and garden installation for residential properties."},
+    {"name": "Plumbing Services", "price": "PHP 2,000 - PHP 40,000", "min_price": "2000", "max_price": "40000", "description": "Complete plumbing solutions from leak repair to full system installation."},
+    {"name": "Re Painting", "price": "PHP 5,000 - PHP 80,000", "min_price": "5000", "max_price": "80000", "description": "Interior and exterior painting services with premium quality finishes."},
+    {"name": "Roofing Renovation", "price": "PHP 20,000 - PHP 150,000", "min_price": "20000", "max_price": "150000", "description": "Complete roofing repair, replacement, and waterproofing services."},
+    {"name": "Shower Enclosure Install", "price": "PHP 12,000 - PHP 50,000", "min_price": "12000", "max_price": "50000", "description": "Custom glass shower enclosure design and installation for modern bathrooms."},
+    {"name": "Tiles Sitter", "price": "PHP 8,000 - PHP 60,000", "min_price": "8000", "max_price": "60000", "description": "Professional tile installation for floors, walls, and bathrooms."},
+    {"name": "Vinyl Install", "price": "PHP 5,000 - PHP 40,000", "min_price": "5000", "max_price": "40000", "description": "Vinyl flooring installation with durable, waterproof finishes."},
+    {"name": "Wall Partition Maker", "price": "PHP 8,000 - PHP 60,000", "min_price": "8000", "max_price": "60000", "description": "Drywall and partition installation for room division and office spaces."},
+    {"name": "Waterproofing", "price": "PHP 8,000 - PHP 60,000", "min_price": "8000", "max_price": "60000", "description": "Professional waterproofing for roofs, walls, basements, and bathrooms."},
+]
+
 SERVICES = [
     {
         "name": "Condo Renovation",
@@ -333,6 +355,22 @@ def admin_dashboard(request):
             "is_admin": IS_ADMIN,
             "admin_stats": ADMIN_STATS,
             "admin_bookings": ADMIN_BOOKINGS,
+        },
+    )
+
+
+def service_settings(request):
+    if not IS_ADMIN:
+        raise Http404("Service settings not available")
+
+    return render(
+        request,
+        "base/settings.html",
+        {
+            "active_page": "settings",
+            "display_name": _display_name(request),
+            "is_admin": IS_ADMIN,
+            "admin_services": ADMIN_SERVICES,
         },
     )
 

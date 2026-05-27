@@ -11,8 +11,19 @@
     const paymentSelect = document.querySelector("[data-payment-select]");
     const adminSearch = document.querySelector("[data-admin-search]");
     const adminStatus = document.querySelector("[data-admin-status]");
+    const adminStatusSelect = document.querySelector("[data-admin-status-select]");
+    const adminStatusToggle = document.querySelector("[data-admin-status-toggle]");
+    const adminStatusLabel = document.querySelector("[data-admin-status-label]");
+    const adminStatusOptionsPanel = document.querySelector("[data-admin-status-options]");
+    const adminStatusOptions = Array.from(document.querySelectorAll("[data-admin-status-option]"));
     const adminRows = document.querySelectorAll("[data-admin-row]");
     const adminEmpty = document.querySelector("[data-admin-empty]");
+    const settingsSearch = document.querySelector("[data-settings-search]");
+    const settingsRows = document.querySelectorAll("[data-settings-row]");
+    const settingsEmpty = document.querySelector("[data-settings-empty]");
+    const serviceModalOpeners = document.querySelectorAll("[data-service-modal-open]");
+    const serviceModals = document.querySelectorAll("[data-service-modal]");
+    const serviceModalClosers = document.querySelectorAll("[data-service-modal-close]");
 
     function closeAccountMenu() {
         accountToggle.setAttribute("aria-expanded", "false");
@@ -213,6 +224,79 @@
         });
     }
 
+    if (adminStatusSelect && adminStatus && adminStatusToggle && adminStatusLabel && adminStatusOptionsPanel) {
+        function closeAdminStatusSelect() {
+            adminStatusToggle.setAttribute("aria-expanded", "false");
+            adminStatusOptionsPanel.hidden = true;
+        }
+
+        function openAdminStatusSelect() {
+            adminStatusToggle.setAttribute("aria-expanded", "true");
+            adminStatusOptionsPanel.hidden = false;
+        }
+
+        function selectAdminStatus(option) {
+            adminStatus.value = option.dataset.adminStatusOption;
+            adminStatusLabel.textContent = option.querySelector("span").textContent;
+            adminStatusOptions.forEach(function (currentOption) {
+                currentOption.setAttribute("aria-selected", String(currentOption === option));
+            });
+            closeAdminStatusSelect();
+            adminStatus.dispatchEvent(new Event("change"));
+            adminStatusToggle.focus();
+        }
+
+        adminStatusToggle.addEventListener("click", function () {
+            if (adminStatusToggle.getAttribute("aria-expanded") === "true") {
+                closeAdminStatusSelect();
+            } else {
+                openAdminStatusSelect();
+            }
+        });
+
+        adminStatusToggle.addEventListener("keydown", function (event) {
+            if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                event.preventDefault();
+                openAdminStatusSelect();
+                adminStatusOptions[event.key === "ArrowDown" ? 0 : adminStatusOptions.length - 1].focus();
+            }
+        });
+
+        adminStatusOptions.forEach(function (option, index) {
+            option.addEventListener("click", function () {
+                selectAdminStatus(option);
+            });
+
+            option.addEventListener("keydown", function (event) {
+                if (event.key === "Escape") {
+                    event.preventDefault();
+                    closeAdminStatusSelect();
+                    adminStatusToggle.focus();
+                } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                    event.preventDefault();
+                    const direction = event.key === "ArrowDown" ? 1 : -1;
+                    const targetIndex = (index + direction + adminStatusOptions.length) % adminStatusOptions.length;
+                    adminStatusOptions[targetIndex].focus();
+                } else if (event.key === "Home" || event.key === "End") {
+                    event.preventDefault();
+                    adminStatusOptions[event.key === "Home" ? 0 : adminStatusOptions.length - 1].focus();
+                }
+            });
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!adminStatusSelect.contains(event.target)) {
+                closeAdminStatusSelect();
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeAdminStatusSelect();
+            }
+        });
+    }
+
     if (adminSearch && adminStatus && adminEmpty) {
         function filterAdminRows() {
             const searchTerm = adminSearch.value.toLowerCase().trim();
@@ -234,6 +318,69 @@
 
         adminSearch.addEventListener("input", filterAdminRows);
         adminStatus.addEventListener("change", filterAdminRows);
+    }
+
+    if (settingsSearch && settingsEmpty) {
+        settingsSearch.addEventListener("input", function () {
+            const query = settingsSearch.value.toLowerCase().trim();
+            let matches = 0;
+
+            settingsRows.forEach(function (row) {
+                const isVisible = row.dataset.search.toLowerCase().includes(query);
+                row.hidden = !isVisible;
+                if (isVisible) {
+                    matches += 1;
+                }
+            });
+
+            settingsEmpty.hidden = matches !== 0;
+        });
+    }
+
+    if (serviceModals.length) {
+        const editModal = document.querySelector("[data-service-modal=\"edit\"]");
+
+        function closeServiceModals() {
+            serviceModals.forEach(function (modal) {
+                modal.hidden = true;
+            });
+            document.body.classList.remove("modal-open");
+        }
+
+        function openServiceModal(type, opener) {
+            const modal = document.querySelector("[data-service-modal=\"" + type + "\"]");
+            if (!modal) {
+                return;
+            }
+
+            if (type === "edit" && editModal) {
+                editModal.querySelector("[data-edit-service-name]").value = opener.dataset.serviceName;
+                editModal.querySelector("[data-edit-service-description]").value = opener.dataset.serviceDescription;
+                editModal.querySelector("[data-edit-service-min]").value = opener.dataset.serviceMin;
+                editModal.querySelector("[data-edit-service-max]").value = opener.dataset.serviceMax;
+            }
+
+            closeServiceModals();
+            modal.hidden = false;
+            document.body.classList.add("modal-open");
+            modal.querySelector("input").focus();
+        }
+
+        serviceModalOpeners.forEach(function (opener) {
+            opener.addEventListener("click", function () {
+                openServiceModal(opener.dataset.serviceModalOpen, opener);
+            });
+        });
+
+        serviceModalClosers.forEach(function (closer) {
+            closer.addEventListener("click", closeServiceModals);
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeServiceModals();
+            }
+        });
     }
 
 }());

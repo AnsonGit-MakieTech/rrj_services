@@ -23,6 +23,7 @@ class HomePageTests(TestCase):
         self.assertContains(response, "Admin")
         self.assertContains(response, "Settings")
         self.assertContains(response, reverse("admin_dashboard"))
+        self.assertContains(response, reverse("service_settings"))
 
     def test_customer_navigation_hides_admin_items(self):
         with patch("base.views.IS_ADMIN", False):
@@ -69,12 +70,39 @@ class AdminDashboardPageTests(TestCase):
         self.assertContains(response, "Most Requested Services")
         self.assertContains(response, "BK-MPNKEBSO")
         self.assertContains(response, "data-admin-search")
+        self.assertContains(response, "data-admin-status-select")
+        self.assertContains(response, "Quotation Sent")
+        self.assertContains(response, "Payment Verification")
+        self.assertContains(response, "In Progress")
         self.assertContains(response, "site-header-admin")
         self.assertContains(response, f'class="active" href="{reverse("admin_dashboard")}"')
 
     def test_admin_dashboard_is_not_available_when_toggle_is_disabled(self):
         with patch("base.views.IS_ADMIN", False):
             response = self.client.get(reverse("admin_dashboard"))
+
+        self.assertEqual(response.status_code, 404)
+
+
+class ServiceSettingsPageTests(TestCase):
+    def test_settings_page_renders_service_management_and_modals_when_enabled(self):
+        with patch("base.views.IS_ADMIN", True):
+            response = self.client.get(reverse("service_settings"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Service Settings")
+        self.assertContains(response, "Manage service categories and pricing.")
+        self.assertContains(response, "Baseboard Maker")
+        self.assertContains(response, "data-settings-search")
+        self.assertContains(response, "data-service-modal=\"add\"")
+        self.assertContains(response, "Add New Service")
+        self.assertContains(response, "Edit Service")
+        self.assertContains(response, "site-header-admin")
+        self.assertContains(response, f'class="active" href="{reverse("service_settings")}"')
+
+    def test_settings_page_is_not_available_when_toggle_is_disabled(self):
+        with patch("base.views.IS_ADMIN", False):
+            response = self.client.get(reverse("service_settings"))
 
         self.assertEqual(response.status_code, 404)
 

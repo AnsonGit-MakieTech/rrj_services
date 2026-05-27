@@ -1,0 +1,168 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Service Settings | RRJ's Maintenance Services</title>
+    <meta name="description" content="Manage service categories and pricing for RRJ's Maintenance Services.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <script src="{% static 'js/home.js' %}" defer></script>
+</head>
+<body class="settings-dashboard-page">
+    {% include "base/includes/header.html" %}
+
+    <main class="settings-page">
+        <div class="settings-container">
+            <header class="settings-heading">
+                <div>
+                    <h1>Service Settings</h1>
+                    <p>Manage service categories and pricing.</p>
+                </div>
+                <button class="settings-add button button-primary" type="button" data-service-modal-open="add">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                    Add Service
+                </button>
+            </header>
+
+            <label class="settings-search">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.35-4.35M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z"/></svg>
+                <span class="sr-only">Search services</span>
+                <input type="search" placeholder="Search services..." data-settings-search>
+            </label>
+
+            <div class="settings-table-shell">
+                <table class="settings-table">
+                    <thead>
+                        <tr>
+                            <th>Service Name</th>
+                            <th class="settings-price-column">Price Range</th>
+                            <th class="settings-description-column">Description</th>
+                            <th class="settings-active-column">Active</th>
+                            <th class="settings-actions-column">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for service in admin_services %}
+                        <tr data-settings-row data-search="{{ service.name }} {{ service.description }}">
+                            <td class="settings-service-name">{{ service.name }}</td>
+                            <td class="settings-price-column settings-price">{{ service.price }}</td>
+                            <td class="settings-description-column settings-description">{{ service.description }}</td>
+                            <td class="settings-active-column">
+                                <label class="settings-switch" aria-label="Make {{ service.name }} active">
+                                    <input type="checkbox" checked>
+                                    <span></span>
+                                </label>
+                            </td>
+                            <td class="settings-actions-column">
+                                <button
+                                    class="settings-action settings-edit"
+                                    type="button"
+                                    aria-label="Edit {{ service.name }}"
+                                    data-service-modal-open="edit"
+                                    data-service-name="{{ service.name }}"
+                                    data-service-description="{{ service.description }}"
+                                    data-service-min="{{ service.min_price }}"
+                                    data-service-max="{{ service.max_price }}"
+                                >
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z"/><path d="m13.5 7.5 3 3"/></svg>
+                                </button>
+                                <button class="settings-action settings-delete" type="button" aria-label="Delete {{ service.name }}">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6m4-6v6M9 7V4h6v3m-9 0 1 14h10l1-14"/></svg>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        <tr data-settings-empty hidden>
+                            <td colspan="5" class="settings-empty">No services match your search.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    {% include "base/includes/footer.html" %}
+
+    <section class="service-modal" data-service-modal="add" hidden>
+        <div class="service-modal-backdrop" data-service-modal-close></div>
+        <form class="service-modal-card" aria-labelledby="add-service-title">
+            <header>
+                <h2 id="add-service-title">Add New Service</h2>
+                <button type="button" class="service-modal-close" aria-label="Close add service form" data-service-modal-close>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6 18 18M18 6 6 18"/></svg>
+                </button>
+            </header>
+            <label class="service-modal-field">
+                <span>Service Name *</span>
+                <input type="text" placeholder="e.g. Tiles Sitter">
+            </label>
+            <label class="service-modal-field">
+                <span>Description</span>
+                <textarea rows="3" placeholder="Brief description of the service..."></textarea>
+            </label>
+            <div class="service-price-fields">
+                <label class="service-modal-field">
+                    <span>Min Price (PHP)</span>
+                    <input type="number" value="0" min="0">
+                </label>
+                <label class="service-modal-field">
+                    <span>Max Price (PHP)</span>
+                    <input type="number" value="0" min="0">
+                </label>
+            </div>
+            <label class="service-modal-active">
+                <input type="checkbox" checked>
+                <span class="service-modal-toggle"></span>
+                Active (visible to customers)
+            </label>
+            <footer class="service-modal-actions">
+                <button class="service-cancel" type="button" data-service-modal-close>Cancel</button>
+                <button class="service-save" type="button">Create Service</button>
+            </footer>
+        </form>
+    </section>
+
+    <section class="service-modal" data-service-modal="edit" hidden>
+        <div class="service-modal-backdrop" data-service-modal-close></div>
+        <form class="service-modal-card" aria-labelledby="edit-service-title">
+            <header>
+                <h2 id="edit-service-title">Edit Service</h2>
+                <button type="button" class="service-modal-close" aria-label="Close edit service form" data-service-modal-close>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6 18 18M18 6 6 18"/></svg>
+                </button>
+            </header>
+            <label class="service-modal-field">
+                <span>Service Name *</span>
+                <input type="text" data-edit-service-name>
+            </label>
+            <label class="service-modal-field">
+                <span>Description</span>
+                <textarea rows="3" data-edit-service-description></textarea>
+            </label>
+            <div class="service-price-fields">
+                <label class="service-modal-field">
+                    <span>Min Price (PHP)</span>
+                    <input type="number" min="0" data-edit-service-min>
+                </label>
+                <label class="service-modal-field">
+                    <span>Max Price (PHP)</span>
+                    <input type="number" min="0" data-edit-service-max>
+                </label>
+            </div>
+            <label class="service-modal-active">
+                <input type="checkbox" checked>
+                <span class="service-modal-toggle"></span>
+                Active (visible to customers)
+            </label>
+            <footer class="service-modal-actions">
+                <button class="service-cancel" type="button" data-service-modal-close>Cancel</button>
+                <button class="service-save" type="button">Save Changes</button>
+            </footer>
+        </form>
+    </section>
+</body>
+</html>

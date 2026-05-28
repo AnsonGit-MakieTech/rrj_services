@@ -34,7 +34,13 @@
                     {% for service in services %}
                     <article class="service-card" data-service-card data-search="{{ service.name }} {{ service.description }}">
                         <div class="service-image">
+                            {% if service.image_url %}
                             <img src="{{ service.image_url }}" alt="{{ service.name }}" loading="lazy" decoding="async">
+                            {% else %}
+                            <div class="service-image-placeholder" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><path d="m14.7 6.3 3-3a4.3 4.3 0 0 1-5.5 5.5l-7.9 7.9a2.1 2.1 0 0 0 3 3l7.9-7.9a4.3 4.3 0 0 1 5.5-5.5l-3 3"/></svg>
+                            </div>
+                            {% endif %}
                         </div>
                         <div class="service-body">
                             <h2>{{ service.name }}</h2>

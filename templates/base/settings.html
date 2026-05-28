@@ -34,6 +34,14 @@
                 <input type="search" placeholder="Search services..." data-settings-search>
             </label>
 
+            {% if messages %}
+            <div class="settings-messages" aria-live="polite">
+                {% for message in messages %}
+                <p class="settings-message settings-message-{{ message.tags }}">{{ message }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
             <div class="settings-table-shell">
                 <table class="settings-table">
                     <thead>
@@ -41,21 +49,27 @@
                             <th>Service Name</th>
                             <th class="settings-price-column">Price Range</th>
                             <th class="settings-description-column">Description</th>
+                            <th>Status</th>
                             <th class="settings-active-column">Active</th>
                             <th class="settings-actions-column">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for service in admin_services %}
-                        <tr data-settings-row data-search="{{ service.name }} {{ service.description }}">
+                        <tr data-settings-row data-search="{{ service.name }} {{ service.description }} {{ service.get_status_display }}">
                             <td class="settings-service-name">{{ service.name }}</td>
-                            <td class="settings-price-column settings-price">{{ service.price }}</td>
+                            <td class="settings-price-column settings-price">{{ service.price_range }}</td>
                             <td class="settings-description-column settings-description">{{ service.description }}</td>
+                            <td><span class="settings-status settings-status-{{ service.status }}">{{ service.get_status_display }}</span></td>
                             <td class="settings-active-column">
-                                <label class="settings-switch" aria-label="Make {{ service.name }} active">
-                                    <input type="checkbox" checked>
-                                    <span></span>
-                                </label>
+                                <form class="settings-toggle-form" method="post" action="{% url 'toggle_service_status' service.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="is_active" value="0">
+                                    <label class="settings-switch" aria-label="Make {{ service.name }} active">
+                                        <input type="checkbox" name="is_active" value="1" {% if service.is_active %}checked{% endif %} onchange="this.form.submit()">
+                                        <span></span>
+                                    </label>
+                                </form>
                             </td>
                             <td class="settings-actions-column">
                                 <button
@@ -63,21 +77,35 @@
                                     type="button"
                                     aria-label="Edit {{ service.name }}"
                                     data-service-modal-open="edit"
+                                    data-service-id="{{ service.id }}"
                                     data-service-name="{{ service.name }}"
                                     data-service-description="{{ service.description }}"
                                     data-service-min="{{ service.min_price }}"
                                     data-service-max="{{ service.max_price }}"
+                                    data-service-status="{{ service.status }}"
+                                    data-service-active="{% if service.is_active %}1{% else %}0{% endif %}"
                                 >
                                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z"/><path d="m13.5 7.5 3 3"/></svg>
                                 </button>
-                                <button class="settings-action settings-delete" type="button" aria-label="Delete {{ service.name }}">
+                                <button
+                                    class="settings-action settings-delete"
+                                    type="button"
+                                    aria-label="Delete {{ service.name }}"
+                                    data-service-delete-open
+                                    data-service-delete-name="{{ service.name }}"
+                                    data-service-delete-url="{% url 'delete_service' service.id %}"
+                                >
                                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6m4-6v6M9 7V4h6v3m-9 0 1 14h10l1-14"/></svg>
                                 </button>
                             </td>
                         </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="settings-empty">No services yet. Add your first service.</td>
+                        </tr>
                         {% endfor %}
                         <tr data-settings-empty hidden>
-                            <td colspan="5" class="settings-empty">No services match your search.</td>
+                            <td colspan="6" class="settings-empty">No services match your search.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -89,7 +117,8 @@
 
     <section class="service-modal" data-service-modal="add" hidden>
         <div class="service-modal-backdrop" data-service-modal-close></div>
-        <form class="service-modal-card" aria-labelledby="add-service-title">
+        <form class="service-modal-card" method="post" action="{% url 'create_service' %}" enctype="multipart/form-data" aria-labelledby="add-service-title">
+            {% csrf_token %}
             <header>
                 <h2 id="add-service-title">Add New Service</h2>
                 <button type="button" class="service-modal-close" aria-label="Close add service form" data-service-modal-close>
@@ -98,16 +127,16 @@
             </header>
             <label class="service-modal-field">
                 <span>Service Name *</span>
-                <input type="text" placeholder="e.g. Tiles Sitter">
+                <input type="text" name="name" placeholder="e.g. Tiles Sitter" required>
             </label>
             <label class="service-modal-field">
                 <span>Description</span>
-                <textarea rows="3" placeholder="Brief description of the service..."></textarea>
+                <textarea rows="3" name="description" placeholder="Brief description of the service..."></textarea>
             </label>
             <div class="service-cover-field" data-service-cover-field>
                 <label class="service-modal-field">
                     <span>Cover Photo</span>
-                    <input class="service-cover-input" type="file" name="cover_photo" accept=".jpg,.jpeg,.png,.webp" data-service-cover-input>
+                    <input class="service-cover-input" type="file" name="image" accept=".jpg,.jpeg,.png,.webp" data-service-cover-input>
                 </label>
                 <div class="service-cover-preview" data-service-cover-preview hidden>
                     <img alt="Selected service cover preview" data-service-cover-image>
@@ -120,28 +149,74 @@
             <div class="service-price-fields">
                 <label class="service-modal-field">
                     <span>Min Price (PHP)</span>
-                    <input type="number" value="0" min="0">
+                    <input type="number" name="min_price" value="0" min="0">
                 </label>
                 <label class="service-modal-field">
                     <span>Max Price (PHP)</span>
-                    <input type="number" value="0" min="0">
+                    <input type="number" name="max_price" value="0" min="0">
                 </label>
             </div>
+            <div class="service-modal-field">
+                <span id="add-service-status-label">Status</span>
+                <div class="service-status-select" data-service-status-select>
+                    <input type="hidden" name="status" value="available" data-service-status-value>
+                    <button
+                        class="service-status-toggle"
+                        type="button"
+                        aria-expanded="false"
+                        aria-haspopup="listbox"
+                        aria-labelledby="add-service-status-label add-service-status-value"
+                        aria-controls="add-service-status-options"
+                        data-service-status-toggle
+                    >
+                        <span>
+                            <b id="add-service-status-value" data-service-status-label>Available</b>
+                            <small data-service-status-help>Taking new bookings</small>
+                        </span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
+                    </button>
+                    <div class="service-status-options" id="add-service-status-options" role="listbox" aria-labelledby="add-service-status-label" data-service-status-options hidden>
+                    {% for value, label in service_status_choices %}
+                        <button
+                            class="service-status-option"
+                            type="button"
+                            role="option"
+                            aria-selected="{% if value == 'available' %}true{% else %}false{% endif %}"
+                            data-service-status-option="{{ value }}"
+                            data-service-status-label="{{ label }}"
+                            {% if value == "available" %}data-service-status-help="Taking new bookings"{% elif value == "unavailable" %}data-service-status-help="Temporarily not offered"{% else %}data-service-status-help="Capacity is full right now"{% endif %}
+                        >
+                            <span>{{ label }}</span>
+                            {% if value == "available" %}
+                            <small>Taking new bookings</small>
+                            {% elif value == "unavailable" %}
+                            <small>Temporarily not offered</small>
+                            {% else %}
+                            <small>Capacity is full right now</small>
+                            {% endif %}
+                        </button>
+                    {% endfor %}
+                    </div>
+                </div>
+            </div>
             <label class="service-modal-active">
-                <input type="checkbox" checked>
+                <input type="hidden" name="is_active" value="0">
+                <input type="checkbox" name="is_active" value="1" checked>
                 <span class="service-modal-toggle"></span>
                 Active (visible to customers)
             </label>
             <footer class="service-modal-actions">
                 <button class="service-cancel" type="button" data-service-modal-close>Cancel</button>
-                <button class="service-save" type="button">Create Service</button>
+                <button class="service-save" type="submit">Create Service</button>
             </footer>
         </form>
     </section>
 
     <section class="service-modal" data-service-modal="edit" hidden>
         <div class="service-modal-backdrop" data-service-modal-close></div>
-        <form class="service-modal-card" aria-labelledby="edit-service-title">
+        <form class="service-modal-card" method="post" action="{% url 'update_service' %}" enctype="multipart/form-data" aria-labelledby="edit-service-title">
+            {% csrf_token %}
+            <input type="hidden" name="service_id" data-edit-service-id>
             <header>
                 <h2 id="edit-service-title">Edit Service</h2>
                 <button type="button" class="service-modal-close" aria-label="Close edit service form" data-service-modal-close>
@@ -150,16 +225,16 @@
             </header>
             <label class="service-modal-field">
                 <span>Service Name *</span>
-                <input type="text" data-edit-service-name>
+                <input type="text" name="name" data-edit-service-name required>
             </label>
             <label class="service-modal-field">
                 <span>Description</span>
-                <textarea rows="3" data-edit-service-description></textarea>
+                <textarea rows="3" name="description" data-edit-service-description></textarea>
             </label>
             <div class="service-cover-field" data-service-cover-field>
                 <label class="service-modal-field">
                     <span>Cover Photo</span>
-                    <input class="service-cover-input" type="file" name="cover_photo" accept=".jpg,.jpeg,.png,.webp" data-service-cover-input>
+                    <input class="service-cover-input" type="file" name="image" accept=".jpg,.jpeg,.png,.webp" data-service-cover-input>
                 </label>
                 <div class="service-cover-preview" data-service-cover-preview hidden>
                     <img alt="Selected service cover preview" data-service-cover-image>
@@ -172,21 +247,84 @@
             <div class="service-price-fields">
                 <label class="service-modal-field">
                     <span>Min Price (PHP)</span>
-                    <input type="number" min="0" data-edit-service-min>
+                    <input type="number" name="min_price" min="0" data-edit-service-min>
                 </label>
                 <label class="service-modal-field">
                     <span>Max Price (PHP)</span>
-                    <input type="number" min="0" data-edit-service-max>
+                    <input type="number" name="max_price" min="0" data-edit-service-max>
                 </label>
             </div>
+            <div class="service-modal-field">
+                <span id="edit-service-status-label">Status</span>
+                <div class="service-status-select" data-service-status-select data-edit-service-status-select>
+                    <input type="hidden" name="status" value="available" data-service-status-value data-edit-service-status>
+                    <button
+                        class="service-status-toggle"
+                        type="button"
+                        aria-expanded="false"
+                        aria-haspopup="listbox"
+                        aria-labelledby="edit-service-status-label edit-service-status-value"
+                        aria-controls="edit-service-status-options"
+                        data-service-status-toggle
+                    >
+                        <span>
+                            <b id="edit-service-status-value" data-service-status-label>Available</b>
+                            <small data-service-status-help>Taking new bookings</small>
+                        </span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
+                    </button>
+                    <div class="service-status-options" id="edit-service-status-options" role="listbox" aria-labelledby="edit-service-status-label" data-service-status-options hidden>
+                    {% for value, label in service_status_choices %}
+                        <button
+                            class="service-status-option"
+                            type="button"
+                            role="option"
+                            aria-selected="{% if value == 'available' %}true{% else %}false{% endif %}"
+                            data-service-status-option="{{ value }}"
+                            data-service-status-label="{{ label }}"
+                            {% if value == "available" %}data-service-status-help="Taking new bookings"{% elif value == "unavailable" %}data-service-status-help="Temporarily not offered"{% else %}data-service-status-help="Capacity is full right now"{% endif %}
+                        >
+                            <span>{{ label }}</span>
+                            {% if value == "available" %}
+                            <small>Taking new bookings</small>
+                            {% elif value == "unavailable" %}
+                            <small>Temporarily not offered</small>
+                            {% else %}
+                            <small>Capacity is full right now</small>
+                            {% endif %}
+                        </button>
+                    {% endfor %}
+                    </div>
+                </div>
+            </div>
             <label class="service-modal-active">
-                <input type="checkbox" checked>
+                <input type="hidden" name="is_active" value="0">
+                <input type="checkbox" name="is_active" value="1" data-edit-service-active>
                 <span class="service-modal-toggle"></span>
                 Active (visible to customers)
             </label>
             <footer class="service-modal-actions">
                 <button class="service-cancel" type="button" data-service-modal-close>Cancel</button>
-                <button class="service-save" type="button">Save Changes</button>
+                <button class="service-save" type="submit">Save Changes</button>
+            </footer>
+        </form>
+    </section>
+
+    <section class="service-delete-modal" data-service-delete-modal hidden>
+        <div class="service-modal-backdrop" data-service-delete-close></div>
+        <form class="service-delete-card" method="post" data-service-delete-form aria-labelledby="delete-service-title">
+            {% csrf_token %}
+            <div class="service-delete-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6m4-6v6M9 7V4h6v3m-9 0 1 14h10l1-14"/></svg>
+            </div>
+            <h2 id="delete-service-title">Delete service?</h2>
+            <p>
+                <strong data-service-delete-label>this service</strong> will be removed from settings and hidden from customers.
+                Existing booking history stays safe.
+            </p>
+            <footer class="service-modal-actions">
+                <button class="service-cancel" type="button" data-service-delete-close>Keep Service</button>
+                <button class="service-delete-confirm" type="submit">Delete Service</button>
             </footer>
         </form>
     </section>

@@ -31,6 +31,8 @@ class Service(models.Model):
     max_price = models.IntegerField( default=0)
     is_active = models.BooleanField( default=True)
     image = models.ImageField(upload_to='services/', blank=True, null=True)
+    image_url = models.URLField(max_length=500, blank=True, null=True)
+    is_deleted = models.BooleanField(default=False)
     status = models.CharField(
         max_length=255, choices=( 
             ('available' , 'Available'),
@@ -42,6 +44,25 @@ class Service(models.Model):
 
     def __str__(self):
         return f"{self.pk} - {self.name}"
+
+    @property
+    def price_range(self):
+        min_price = self.min_price or 0
+        max_price = self.max_price or 0
+
+        if min_price and max_price:
+            return f"PHP {min_price:,.0f} - PHP {max_price:,.0f}"
+        if min_price:
+            return f"From PHP {min_price:,.0f}"
+        if max_price:
+            return f"Up to PHP {max_price:,.0f}"
+        return "Price on assessment"
+
+    @property
+    def display_image_url(self):
+        if self.image:
+            return self.image.url
+        return self.image_url or ""
 
 
     

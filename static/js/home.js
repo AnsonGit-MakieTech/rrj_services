@@ -25,6 +25,12 @@
     const serviceModals = document.querySelectorAll("[data-service-modal]");
     const serviceModalClosers = document.querySelectorAll("[data-service-modal-close]");
     const serviceCoverFields = document.querySelectorAll("[data-service-cover-field]");
+    const serviceStatusSelects = document.querySelectorAll("[data-service-status-select]");
+    const serviceDeleteOpeners = document.querySelectorAll("[data-service-delete-open]");
+    const serviceDeleteModal = document.querySelector("[data-service-delete-modal]");
+    const serviceDeleteClosers = document.querySelectorAll("[data-service-delete-close]");
+    const serviceDeleteForm = document.querySelector("[data-service-delete-form]");
+    const serviceDeleteLabel = document.querySelector("[data-service-delete-label]");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     function showAnimated(element) {
@@ -435,6 +441,126 @@
         });
     }
 
+    function closeServiceStatusSelect(select) {
+        const toggle = select.querySelector("[data-service-status-toggle]");
+        const optionsPanel = select.querySelector("[data-service-status-options]");
+        toggle.setAttribute("aria-expanded", "false");
+        hideAnimated(optionsPanel);
+    }
+
+    function closeServiceStatusSelects(except) {
+        serviceStatusSelects.forEach(function (select) {
+            if (select !== except) {
+                closeServiceStatusSelect(select);
+            }
+        });
+    }
+
+    function setServiceStatusValue(select, value) {
+        const input = select.querySelector("[data-service-status-value]");
+        const label = select.querySelector("[data-service-status-label]");
+        const help = select.querySelector("[data-service-status-help]");
+        const options = Array.from(select.querySelectorAll("[data-service-status-option]"));
+        const selectedOption = options.find(function (option) {
+            return option.dataset.serviceStatusOption === value;
+        }) || options[0];
+
+        input.value = selectedOption.dataset.serviceStatusOption;
+        label.textContent = selectedOption.dataset.serviceStatusLabel;
+        help.textContent = selectedOption.dataset.serviceStatusHelp;
+        options.forEach(function (option) {
+            option.setAttribute("aria-selected", String(option === selectedOption));
+        });
+    }
+
+    if (serviceStatusSelects.length) {
+        serviceStatusSelects.forEach(function (select) {
+            const toggle = select.querySelector("[data-service-status-toggle]");
+            const optionsPanel = select.querySelector("[data-service-status-options]");
+            const options = Array.from(select.querySelectorAll("[data-service-status-option]"));
+
+            toggle.addEventListener("click", function () {
+                const isOpen = toggle.getAttribute("aria-expanded") === "true";
+                closeServiceStatusSelects(select);
+                toggle.setAttribute("aria-expanded", String(!isOpen));
+                if (isOpen) {
+                    hideAnimated(optionsPanel);
+                } else {
+                    showAnimated(optionsPanel);
+                }
+            });
+
+            toggle.addEventListener("keydown", function (event) {
+                if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                    event.preventDefault();
+                    closeServiceStatusSelects(select);
+                    toggle.setAttribute("aria-expanded", "true");
+                    showAnimated(optionsPanel);
+                    options[event.key === "ArrowDown" ? 0 : options.length - 1].focus();
+                }
+            });
+
+            options.forEach(function (option, index) {
+                option.addEventListener("click", function () {
+                    setServiceStatusValue(select, option.dataset.serviceStatusOption);
+                    closeServiceStatusSelect(select);
+                    toggle.focus();
+                });
+
+                option.addEventListener("keydown", function (event) {
+                    if (event.key === "Escape") {
+                        event.preventDefault();
+                        closeServiceStatusSelect(select);
+                        toggle.focus();
+                    } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                        event.preventDefault();
+                        const direction = event.key === "ArrowDown" ? 1 : -1;
+                        const targetIndex = (index + direction + options.length) % options.length;
+                        options[targetIndex].focus();
+                    } else if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setServiceStatusValue(select, option.dataset.serviceStatusOption);
+                        closeServiceStatusSelect(select);
+                        toggle.focus();
+                    }
+                });
+            });
+        });
+
+        document.addEventListener("click", function (event) {
+            serviceStatusSelects.forEach(function (select) {
+                if (!select.contains(event.target)) {
+                    closeServiceStatusSelect(select);
+                }
+            });
+        });
+    }
+
+    function closeServiceDeleteModal() {
+        if (!serviceDeleteModal) {
+            return;
+        }
+
+        hideAnimated(serviceDeleteModal);
+        document.body.classList.remove("modal-open");
+    }
+
+    if (serviceDeleteModal && serviceDeleteForm && serviceDeleteLabel) {
+        serviceDeleteOpeners.forEach(function (opener) {
+            opener.addEventListener("click", function () {
+                serviceDeleteForm.action = opener.dataset.serviceDeleteUrl;
+                serviceDeleteLabel.textContent = opener.dataset.serviceDeleteName;
+                showAnimated(serviceDeleteModal);
+                document.body.classList.add("modal-open");
+                serviceDeleteModal.querySelector(".service-delete-confirm").focus();
+            });
+        });
+
+        serviceDeleteClosers.forEach(function (closer) {
+            closer.addEventListener("click", closeServiceDeleteModal);
+        });
+    }
+
     if (serviceModals.length) {
         const editModal = document.querySelector("[data-service-modal=\"edit\"]");
 
@@ -503,10 +629,13 @@
             }
 
             if (type === "edit" && editModal) {
+                editModal.querySelector("[data-edit-service-id]").value = opener.dataset.serviceId;
                 editModal.querySelector("[data-edit-service-name]").value = opener.dataset.serviceName;
                 editModal.querySelector("[data-edit-service-description]").value = opener.dataset.serviceDescription;
                 editModal.querySelector("[data-edit-service-min]").value = opener.dataset.serviceMin;
                 editModal.querySelector("[data-edit-service-max]").value = opener.dataset.serviceMax;
+                setServiceStatusValue(editModal.querySelector("[data-edit-service-status-select]"), opener.dataset.serviceStatus);
+                editModal.querySelector("[data-edit-service-active]").checked = opener.dataset.serviceActive === "1";
             }
 
             closeServiceModals();
@@ -527,7 +656,11 @@
 
         document.addEventListener("keydown", function (event) {
             if (event.key === "Escape") {
+                closeServiceStatusSelects();
                 closeServiceModals();
+                if (serviceDeleteModal) {
+                    closeServiceDeleteModal();
+                }
             }
         });
     }

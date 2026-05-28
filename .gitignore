@@ -12,12 +12,16 @@ __pycache__/
 .ruff_cache/
 .coverage
 htmlcov/
+base/migrations/
+
 
 # Virtual environments
 venv/
 .venv/
 env/
 ENV/
+
+
 
 # Django local/generated files
 db.sqlite3
@@ -26,6 +30,7 @@ db.sqlite3-journal
 media/
 staticfiles/
 *.log
+services/
 
 # Packaging/build artifacts
 build/

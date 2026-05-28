@@ -3,6 +3,8 @@ from django.test import TestCase
 from django.urls import reverse
 from unittest.mock import patch
 
+from base.models import Service
+
 
 class AuthenticatedPageTestCase(TestCase):
     def setUp(self):
@@ -256,7 +258,13 @@ class ServiceSettingsPageTests(AuthenticatedPageTestCase):
         self.assertContains(response, "Add New Service")
         self.assertContains(response, "Edit Service")
         self.assertContains(response, "Cover Photo", count=2)
-        self.assertContains(response, 'name="cover_photo"', count=2)
+        self.assertContains(response, 'name="image"', count=2)
+        self.assertContains(response, 'name="status"', count=2)
+        self.assertContains(response, "data-service-status-select", count=2)
+        self.assertContains(response, "Taking new bookings", count=6)
+        self.assertContains(response, "data-service-delete-modal")
+        self.assertContains(response, "Keep Service")
+        self.assertNotContains(response, "confirm('Delete this service?')")
         self.assertContains(response, "data-service-cover-preview", count=2)
         self.assertContains(response, "site-header-admin")
         self.assertContains(response, f'class="active" href="{reverse("service_settings")}"')
@@ -267,15 +275,96 @@ class ServiceSettingsPageTests(AuthenticatedPageTestCase):
         self.assertEqual(response.status_code, 404)
 
 
+class ManageServiceApiTests(AuthenticatedPageTestCase):
+    def test_staff_can_create_service(self):
+        self.make_user_staff()
+
+        response = self.client.post(
+            reverse("create_service"),
+            {
+                "name": "Solar Panel Cleaning",
+                "description": "Panel cleaning and inspection.",
+                "min_price": "2500",
+                "max_price": "12000",
+                "status": "available",
+                "is_active": "1",
+            },
+        )
+
+        self.assertRedirects(response, reverse("service_settings"))
+        service = Service.objects.get(name="Solar Panel Cleaning")
+        self.assertEqual(service.description, "Panel cleaning and inspection.")
+        self.assertEqual(service.min_price, 2500)
+        self.assertEqual(service.max_price, 12000)
+        self.assertEqual(service.status, "available")
+        self.assertTrue(service.is_active)
+        self.assertFalse(service.is_deleted)
+
+    def test_staff_can_update_toggle_and_delete_service(self):
+        self.make_user_staff()
+        service = Service.objects.create(
+            name="Old Service",
+            description="Old description",
+            min_price=100,
+            max_price=500,
+            is_active=True,
+            status="available",
+        )
+
+        response = self.client.post(
+            reverse("update_service"),
+            {
+                "service_id": service.id,
+                "name": "Updated Service",
+                "description": "Updated description",
+                "min_price": "300",
+                "max_price": "900",
+                "status": "fully_booked",
+                "is_active": "1",
+            },
+        )
+        self.assertRedirects(response, reverse("service_settings"))
+
+        service.refresh_from_db()
+        self.assertEqual(service.name, "Updated Service")
+        self.assertEqual(service.status, "fully_booked")
+        self.assertEqual(service.min_price, 300)
+        self.assertEqual(service.max_price, 900)
+
+        response = self.client.post(
+            reverse("toggle_service_status", args=[service.id]),
+            {"is_active": "0"},
+        )
+        self.assertRedirects(response, reverse("service_settings"))
+        service.refresh_from_db()
+        self.assertFalse(service.is_active)
+
+        response = self.client.post(reverse("delete_service", args=[service.id]))
+        self.assertRedirects(response, reverse("service_settings"))
+        service.refresh_from_db()
+        self.assertTrue(service.is_deleted)
+        self.assertFalse(service.is_active)
+
+    def test_customer_cannot_manage_services(self):
+        service = Service.objects.create(name="Customer Blocked Service")
+
+        response = self.client.post(reverse("delete_service", args=[service.id]))
+
+        self.assertEqual(response.status_code, 404)
+        service.refresh_from_db()
+        self.assertFalse(service.is_deleted)
+
+
 class ServicesPageTests(AuthenticatedPageTestCase):
     def test_services_page_renders_full_catalog(self):
         response = self.client.get(reverse("services"))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Search services...")
+        self.assertContains(response, "Baseboard Maker")
         self.assertContains(response, "Condo Renovation")
         self.assertContains(response, "Carpentry")
-        self.assertContains(response, "images.unsplash.com", count=16)
+        self.assertContains(response, "images.unsplash.com")
 
 
 class MyBookingsPageTests(AuthenticatedPageTestCase):

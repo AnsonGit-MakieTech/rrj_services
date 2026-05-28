@@ -588,6 +588,21 @@ svg {
     width: 100%;
 }
 
+.service-image-placeholder {
+    align-items: center;
+    background: var(--color-surface-soft);
+    color: var(--color-brand-violet);
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    width: 100%;
+}
+
+.service-image-placeholder svg {
+    height: 42px;
+    width: 42px;
+}
+
 .service-card:hover .service-image img {
     transform: scale(1.025);
 }
@@ -1621,10 +1636,14 @@ svg {
 }
 
 .settings-table th:nth-child(4) {
-    width: 106px;
+    width: 128px;
 }
 
 .settings-table th:nth-child(5) {
+    width: 106px;
+}
+
+.settings-table th:nth-child(6) {
     width: 88px;
 }
 
@@ -1649,6 +1668,61 @@ svg {
 
 .settings-actions-column {
     text-align: right !important;
+}
+
+.settings-toggle-form,
+.settings-delete-form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.settings-status {
+    border-radius: 999px;
+    display: inline-flex;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    padding: 6px 10px;
+}
+
+.settings-status-available {
+    background: #ecfdf3;
+    color: #15803d;
+}
+
+.settings-status-unavailable {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.settings-status-fully_booked {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.settings-messages {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.settings-message {
+    border-radius: 11px;
+    font-size: 13px;
+    line-height: 1.4;
+    padding: 10px 12px;
+}
+
+.settings-message-success {
+    background: #ecfdf3;
+    border: 1px solid #bbf7d0;
+    color: #15803d;
+}
+
+.settings-message-error {
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    color: #be123c;
 }
 
 .settings-switch {
@@ -1834,6 +1908,7 @@ body.modal-open {
 }
 
 .service-modal-field input,
+.service-modal-field select,
 .service-modal-field textarea {
     background: var(--color-surface);
     border: 1px solid #d7dfec;
@@ -1851,6 +1926,20 @@ body.modal-open {
     height: 38px;
 }
 
+.service-modal-field select {
+    appearance: none;
+    background-image:
+        linear-gradient(45deg, transparent 50%, #8b97a8 50%),
+        linear-gradient(135deg, #8b97a8 50%, transparent 50%);
+    background-position:
+        calc(100% - 17px) 16px,
+        calc(100% - 12px) 16px;
+    background-repeat: no-repeat;
+    background-size: 5px 5px, 5px 5px;
+    height: 38px;
+    padding-right: 32px;
+}
+
 .service-modal-field textarea {
     min-height: 78px;
     padding: 11px 12px;
@@ -1858,9 +1947,104 @@ body.modal-open {
 }
 
 .service-modal-field input:focus,
+.service-modal-field select:focus,
 .service-modal-field textarea:focus {
     border-color: var(--color-brand-violet);
     box-shadow: 0 0 0 3px rgba(96, 24, 240, .09);
+}
+
+.service-status-select {
+    position: relative;
+}
+
+.service-status-toggle {
+    align-items: center;
+    background: var(--color-surface);
+    border: 1px solid #d7dfec;
+    border-radius: 11px;
+    color: var(--color-text-primary);
+    display: flex;
+    min-height: 52px;
+    justify-content: space-between;
+    padding: 8px 12px;
+    text-align: left;
+    transition: border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
+    width: 100%;
+}
+
+.service-status-toggle:hover,
+.service-status-toggle[aria-expanded="true"] {
+    border-color: var(--color-brand-violet);
+    box-shadow: 0 0 0 3px rgba(96, 24, 240, .09);
+}
+
+.service-status-toggle span {
+    display: grid;
+    gap: 2px;
+}
+
+.service-status-toggle b,
+.service-status-option span {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.service-status-toggle small,
+.service-status-option small {
+    color: var(--color-text-secondary);
+    display: block;
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.service-status-toggle svg {
+    color: #64748b;
+    flex: 0 0 auto;
+    height: 17px;
+    width: 17px;
+}
+
+.service-status-options {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-soft);
+    display: grid;
+    gap: 4px;
+    left: 0;
+    padding: 7px;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    z-index: 45;
+}
+
+.service-status-options[hidden] {
+    display: none;
+}
+
+.service-status-options:not([hidden]) {
+    animation: popover-enter var(--motion-fast) var(--motion-ease) both;
+    transform-origin: top;
+}
+
+.service-status-options.is-closing {
+    animation: popover-exit var(--motion-fast) var(--motion-ease) both;
+    pointer-events: none;
+}
+
+.service-status-option {
+    background: transparent;
+    border-radius: 9px;
+    padding: 10px 11px;
+    text-align: left;
+}
+
+.service-status-option:hover,
+.service-status-option:focus-visible,
+.service-status-option[aria-selected="true"] {
+    background: var(--color-surface-soft);
+    color: var(--color-brand-violet);
 }
 
 .service-cover-field {
@@ -2002,6 +2186,90 @@ body.modal-open {
 
 .service-modal-actions button:active {
     transform: translateY(1px);
+}
+
+.service-delete-modal {
+    align-items: center;
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    padding: 24px;
+    position: fixed;
+    z-index: 50;
+}
+
+.service-delete-modal[hidden] {
+    display: none;
+}
+
+.service-delete-modal:not([hidden]) .service-modal-backdrop {
+    animation: backdrop-enter var(--motion-base) ease both;
+}
+
+.service-delete-modal:not([hidden]) .service-delete-card {
+    animation: modal-enter var(--motion-base) var(--motion-ease) both;
+}
+
+.service-delete-modal.is-closing .service-modal-backdrop {
+    animation: backdrop-exit var(--motion-fast) ease both;
+}
+
+.service-delete-modal.is-closing .service-delete-card {
+    animation: modal-exit var(--motion-fast) var(--motion-ease) both;
+}
+
+.service-delete-card {
+    background: var(--color-surface);
+    border-radius: 13px;
+    box-shadow: 0 22px 54px rgba(17, 24, 39, .24);
+    padding: 26px;
+    position: relative;
+    text-align: center;
+    width: min(390px, 100%);
+}
+
+.service-delete-icon {
+    align-items: center;
+    background: #fff1f2;
+    border-radius: 50%;
+    color: #be123c;
+    display: inline-flex;
+    height: 52px;
+    justify-content: center;
+    margin-bottom: 15px;
+    width: 52px;
+}
+
+.service-delete-icon svg {
+    height: 23px;
+    width: 23px;
+}
+
+.service-delete-card h2 {
+    font-size: 20px;
+    letter-spacing: -.045em;
+    margin-bottom: 8px;
+}
+
+.service-delete-card p {
+    color: var(--color-text-secondary);
+    font-size: 14px;
+    line-height: 1.55;
+    margin: 0 auto 22px;
+    max-width: 300px;
+}
+
+.service-delete-card strong {
+    color: var(--color-text-primary);
+}
+
+.service-delete-confirm {
+    background: #ef354b;
+    color: var(--color-surface);
+}
+
+.service-delete-confirm:hover {
+    background: #b91c32;
 }
 
 .auth-page {
@@ -3807,10 +4075,14 @@ body.modal-open {
     }
 
     .settings-table th:nth-child(4) {
-        width: 84px;
+        width: 92px;
     }
 
     .settings-table th:nth-child(5) {
+        width: 76px;
+    }
+
+    .settings-table th:nth-child(6) {
         width: 92px;
     }
 

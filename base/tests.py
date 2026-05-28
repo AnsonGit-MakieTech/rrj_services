@@ -1,9 +1,22 @@
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from unittest.mock import patch
 
 
-class HomePageTests(TestCase):
+class AuthenticatedPageTestCase(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            username="639123456789",
+            password=None,
+            full_name="Makie Tech",
+            contact_number="639123456789",
+        )
+        self.client.force_login(self.user)
+
+
+class HomePageTests(AuthenticatedPageTestCase):
     def test_home_page_renders_customer_dashboard_content(self):
         response = self.client.get(reverse("home"))
 
@@ -57,7 +70,71 @@ class AuthenticationPageTests(TestCase):
         self.assertContains(response, "assets/rrj-logo.png")
 
 
-class AdminDashboardPageTests(TestCase):
+class AuthenticationApiTests(TestCase):
+    def test_register_api_creates_user_and_logs_in(self):
+        response = self.client.post(
+            reverse("api_register"),
+            {
+                "full_name": "Juan Dela Cruz",
+                "contact_number": "0912 345 6789",
+            },
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["redirect_url"], reverse("home"))
+        self.assertIn("_auth_user_id", self.client.session)
+
+        User = get_user_model()
+        self.assertTrue(
+            User.objects.filter(
+                full_name="Juan Dela Cruz",
+                contact_number="639123456789",
+            ).exists()
+        )
+
+    def test_login_api_logs_in_registered_user(self):
+        User = get_user_model()
+        User.objects.create_user(
+            username="639123456789",
+            password=None,
+            full_name="Makie Tech",
+            contact_number="639123456789",
+        )
+
+        response = self.client.post(
+            reverse("api_login"),
+            {
+                "full_name": "makie tech",
+                "contact_number": "09123456789",
+                "next": reverse("services"),
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["redirect_url"], reverse("services"))
+        self.assertIn("_auth_user_id", self.client.session)
+
+    def test_login_api_rejects_unknown_user(self):
+        response = self.client.post(
+            reverse("api_login"),
+            {
+                "full_name": "Unknown User",
+                "contact_number": "09123456789",
+            },
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+
+class PageProtectionTests(TestCase):
+    def test_home_requires_login(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertRedirects(response, f"{reverse('login')}?next={reverse('home')}")
+
+
+class AdminDashboardPageTests(AuthenticatedPageTestCase):
     def test_admin_dashboard_renders_metrics_charts_and_bookings_when_enabled(self):
         with patch("base.views.IS_ADMIN", True):
             response = self.client.get(reverse("admin_dashboard"))
@@ -90,7 +167,7 @@ class AdminDashboardPageTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
-class AdminViewBookingPageTests(TestCase):
+class AdminViewBookingPageTests(AuthenticatedPageTestCase):
     def test_confirmed_booking_renders_admin_controls_when_enabled(self):
         with patch("base.views.IS_ADMIN", True), patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "booking_confirmed"):
             response = self.client.get(reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
@@ -158,7 +235,7 @@ class AdminViewBookingPageTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
-class ServiceSettingsPageTests(TestCase):
+class ServiceSettingsPageTests(AuthenticatedPageTestCase):
     def test_settings_page_renders_service_management_and_modals_when_enabled(self):
         with patch("base.views.IS_ADMIN", True):
             response = self.client.get(reverse("service_settings"))
@@ -184,7 +261,7 @@ class ServiceSettingsPageTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
-class ServicesPageTests(TestCase):
+class ServicesPageTests(AuthenticatedPageTestCase):
     def test_services_page_renders_full_catalog(self):
         response = self.client.get(reverse("services"))
 
@@ -195,7 +272,7 @@ class ServicesPageTests(TestCase):
         self.assertContains(response, "images.unsplash.com", count=16)
 
 
-class MyBookingsPageTests(TestCase):
+class MyBookingsPageTests(AuthenticatedPageTestCase):
     def test_my_bookings_page_renders_dashboard_fixture_data(self):
         response = self.client.get(reverse("my_bookings"))
 
@@ -207,7 +284,7 @@ class MyBookingsPageTests(TestCase):
         self.assertContains(response, reverse("view_booking", args=["BK-MPL5LPV3"]))
 
 
-class AddBookingPageTests(TestCase):
+class AddBookingPageTests(AuthenticatedPageTestCase):
     def test_add_booking_page_renders_ui_and_selected_service(self):
         response = self.client.get(
             reverse("add_booking"),
@@ -222,7 +299,7 @@ class AddBookingPageTests(TestCase):
         self.assertContains(response, '<option value="Condo Renovation" selected>')
 
 
-class ViewBookingPageTests(TestCase):
+class ViewBookingPageTests(AuthenticatedPageTestCase):
     def test_detail_page_renders_simulated_workflow_state(self):
         response = self.client.get(reverse("view_booking", args=["BK-MPL5LPV3"]))
 

@@ -1,6 +1,7 @@
+from django.contrib.auth.decorators import login_required
 from django.http import Http404
-from django.shortcuts import render
-from apis.authentications import *
+from django.shortcuts import redirect, render
+from apis.authentications import api_login, api_register, logout_page
 
 
 # Change this value to True to preview the administrator navigation.
@@ -534,12 +535,13 @@ def _admin_booking_detail(reference):
 
 def _display_name(request):
     if request.user.is_authenticated:
-        return request.user.get_full_name() or request.user.username
+        return getattr(request.user, "full_name", "") or request.user.get_full_name() or request.user.username
     if IS_ADMIN:
         return "Sallo Uno"
     return "Makie Tech"
 
 
+@login_required
 def home(request):
     return render(
         request,
@@ -554,13 +556,18 @@ def home(request):
 
 
 def login_page(request):
+    if request.user.is_authenticated:
+        return redirect("home")
     return render(request, "base/login.html")
 
 
 def register_page(request):
+    if request.user.is_authenticated:
+        return redirect("home")
     return render(request, "base/register.html")
 
 
+@login_required
 def admin_dashboard(request):
     if not IS_ADMIN:
         raise Http404("Admin dashboard not available")
@@ -582,6 +589,7 @@ def admin_dashboard(request):
     )
 
 
+@login_required
 def admin_view_booking(request, reference):
     if not IS_ADMIN:
         raise Http404("Admin booking not available")
@@ -607,6 +615,7 @@ def admin_view_booking(request, reference):
     )
 
 
+@login_required
 def service_settings(request):
     if not IS_ADMIN:
         raise Http404("Service settings not available")
@@ -623,6 +632,7 @@ def service_settings(request):
     )
 
 
+@login_required
 def services(request):
     return render(
         request,
@@ -636,6 +646,7 @@ def services(request):
     )
 
 
+@login_required
 def my_bookings(request):
     return render(
         request,
@@ -655,6 +666,7 @@ def my_bookings(request):
     )
 
 
+@login_required
 def add_booking(request):
     selected_service = request.GET.get("service", "")
     service_names = {service["name"] for service in SERVICES}
@@ -674,6 +686,7 @@ def add_booking(request):
     )
 
 
+@login_required
 def view_booking(request, reference):
     booking = next((booking.copy() for booking in BOOKINGS if booking["reference"] == reference), None)
     if booking is None:

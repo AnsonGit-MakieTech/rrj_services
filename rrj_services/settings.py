@@ -45,6 +45,10 @@ INSTALLED_APPS = [
     'base'
 ]
 
+AUTH_USER_MODEL = 'base.AuthenticatedUser'
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'home'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     # Whitenoise

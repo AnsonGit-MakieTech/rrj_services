@@ -136,8 +136,8 @@ class ChatMessage(models.Model):
 
     # Chat Message Information
     message = models.TextField( blank=True, null=True)
-    sender = models.ForeignKey(AuthenticatedUser, on_delete=models.CASCADE , related_name='chat_messages')
-    receiver = models.ForeignKey(AuthenticatedUser, on_delete=models.CASCADE , related_name='chat_messages')
+    sender = models.ForeignKey(AuthenticatedUser, on_delete=models.CASCADE , related_name='sent_chat_messages')
+    receiver = models.ForeignKey(AuthenticatedUser, on_delete=models.CASCADE , related_name='received_chat_messages')
 
     def __str__(self):
         return f"{self.pk} - {self.message}"

@@ -22,7 +22,10 @@
             <h1 id="register-title">Create an account</h1>
             <p class="auth-description">Book services and receive project updates using your contact number.</p>
 
-            <form class="auth-form">
+            <form class="auth-form" method="post" action="{% url 'api_register' %}" data-auth-form>
+                {% csrf_token %}
+                <p class="auth-message" data-auth-message aria-live="polite" hidden></p>
+
                 <label class="auth-field">
                     <span>Full Name</span>
                     <span class="auth-control">
@@ -40,11 +43,15 @@
                 </label>
 
                 <p class="auth-support">Your contact number will be used for booking updates and account verification.</p>
-                <button class="auth-submit" type="button">Register</button>
+                <button class="auth-submit" type="submit">
+                    <span class="auth-spinner" aria-hidden="true"></span>
+                    <span data-auth-submit-label>Register</span>
+                </button>
             </form>
 
             <p class="auth-switch">Already have an account? <a href="{% url 'login' %}">Login</a></p>
         </section>
     </main>
+    <script src="{% static 'js/authentication.js' %}" defer></script>
 </body>
 </html>

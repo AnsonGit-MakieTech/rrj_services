@@ -4,9 +4,6 @@ from django.shortcuts import redirect, render
 from apis.authentications import api_login, api_register, logout_page
 
 
-# Change this value to True to preview the administrator navigation.
-IS_ADMIN = True
-
 ADMIN_STATS = [
     {"label": "Total Bookings", "value": "11", "kind": "bookings"},
     {"label": "Pending Quotations", "value": "1", "kind": "pending"},
@@ -536,9 +533,11 @@ def _admin_booking_detail(reference):
 def _display_name(request):
     if request.user.is_authenticated:
         return getattr(request.user, "full_name", "") or request.user.get_full_name() or request.user.username
-    if IS_ADMIN:
-        return "Sallo Uno"
     return "Makie Tech"
+
+
+def _is_admin(request):
+    return request.user.is_authenticated and request.user.is_staff
 
 
 @login_required
@@ -549,7 +548,7 @@ def home(request):
         {
             "active_page": "home",
             "display_name": _display_name(request),
-            "is_admin": IS_ADMIN,
+            "is_admin": _is_admin(request),
             "services": SERVICES[:8],
         },
     )
@@ -569,7 +568,7 @@ def register_page(request):
 
 @login_required
 def admin_dashboard(request):
-    if not IS_ADMIN:
+    if not _is_admin(request):
         raise Http404("Admin dashboard not available")
 
     bookings = _admin_bookings_for_dashboard()
@@ -580,7 +579,7 @@ def admin_dashboard(request):
         {
             "active_page": "admin",
             "display_name": _display_name(request),
-            "is_admin": IS_ADMIN,
+            "is_admin": True,
             "admin_stats": ADMIN_STATS,
             "admin_bookings": bookings,
             "admin_monthly_chart": monthly_chart,
@@ -591,7 +590,7 @@ def admin_dashboard(request):
 
 @login_required
 def admin_view_booking(request, reference):
-    if not IS_ADMIN:
+    if not _is_admin(request):
         raise Http404("Admin booking not available")
 
     booking = _admin_booking_detail(reference)
@@ -607,7 +606,7 @@ def admin_view_booking(request, reference):
         {
             "active_page": "admin",
             "display_name": _display_name(request),
-            "is_admin": IS_ADMIN,
+            "is_admin": True,
             "booking": booking,
             "state": state,
             "progress_steps": _progress_steps(state),
@@ -617,7 +616,7 @@ def admin_view_booking(request, reference):
 
 @login_required
 def service_settings(request):
-    if not IS_ADMIN:
+    if not _is_admin(request):
         raise Http404("Service settings not available")
 
     return render(
@@ -626,7 +625,7 @@ def service_settings(request):
         {
             "active_page": "settings",
             "display_name": _display_name(request),
-            "is_admin": IS_ADMIN,
+            "is_admin": True,
             "admin_services": ADMIN_SERVICES,
         },
     )
@@ -640,7 +639,7 @@ def services(request):
         {
             "active_page": "services",
             "display_name": _display_name(request),
-            "is_admin": IS_ADMIN,
+            "is_admin": _is_admin(request),
             "services": SERVICES,
         },
     )
@@ -654,7 +653,7 @@ def my_bookings(request):
         {
             "active_page": "bookings",
             "display_name": _display_name(request),
-            "is_admin": IS_ADMIN,
+            "is_admin": _is_admin(request),
             "bookings": _bookings_for_dashboard(),
             "booking_stats": [
                 {"label": "Total", "value": "2", "kind": "total"},
@@ -679,7 +678,7 @@ def add_booking(request):
         {
             "active_page": "",
             "display_name": _display_name(request),
-            "is_admin": IS_ADMIN,
+            "is_admin": _is_admin(request),
             "services": SERVICES,
             "selected_service": selected_service,
         },
@@ -701,7 +700,7 @@ def view_booking(request, reference):
         {
             "active_page": "bookings",
             "display_name": _display_name(request),
-            "is_admin": IS_ADMIN,
+            "is_admin": _is_admin(request),
             "booking": booking,
             "state": state,
             "progress_steps": _progress_steps(state),

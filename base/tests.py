@@ -15,6 +15,11 @@ class AuthenticatedPageTestCase(TestCase):
         )
         self.client.force_login(self.user)
 
+    def make_user_staff(self):
+        self.user.is_staff = True
+        self.user.save(update_fields=["is_staff"])
+        self.client.force_login(self.user)
+
 
 class HomePageTests(AuthenticatedPageTestCase):
     def test_home_page_renders_customer_dashboard_content(self):
@@ -24,13 +29,13 @@ class HomePageTests(AuthenticatedPageTestCase):
         self.assertContains(response, "Build Better.")
         self.assertContains(response, "Condo Renovation")
         self.assertContains(response, "RRJ's Maintenance Services")
-        self.assertContains(response, "assets/rrj-logo-icon.png")
+        self.assertContains(response, "assets/rrj-logo-icon")
         self.assertContains(response, "images.unsplash.com")
         self.assertContains(response, 'alt="Condo Renovation"')
 
-    def test_admin_toggle_renders_admin_navigation_variant(self):
-        with patch("base.views.IS_ADMIN", True):
-            response = self.client.get(reverse("home"))
+    def test_staff_user_renders_admin_navigation_variant(self):
+        self.make_user_staff()
+        response = self.client.get(reverse("home"))
 
         self.assertContains(response, "site-header-admin")
         self.assertContains(response, "Admin")
@@ -39,8 +44,7 @@ class HomePageTests(AuthenticatedPageTestCase):
         self.assertContains(response, reverse("service_settings"))
 
     def test_customer_navigation_hides_admin_items(self):
-        with patch("base.views.IS_ADMIN", False):
-            response = self.client.get(reverse("home"))
+        response = self.client.get(reverse("home"))
 
         self.assertNotContains(response, "site-header-admin")
         self.assertNotContains(response, 'aria-label="Admin dashboard"')
@@ -67,7 +71,7 @@ class AuthenticationPageTests(TestCase):
         self.assertContains(response, 'name="contact_number"')
         self.assertNotContains(response, 'type="password"')
         self.assertContains(response, reverse("login"))
-        self.assertContains(response, "assets/rrj-logo.png")
+        self.assertContains(response, "assets/rrj-logo")
 
 
 class AuthenticationApiTests(TestCase):
@@ -135,9 +139,9 @@ class PageProtectionTests(TestCase):
 
 
 class AdminDashboardPageTests(AuthenticatedPageTestCase):
-    def test_admin_dashboard_renders_metrics_charts_and_bookings_when_enabled(self):
-        with patch("base.views.IS_ADMIN", True):
-            response = self.client.get(reverse("admin_dashboard"))
+    def test_admin_dashboard_renders_metrics_charts_and_bookings_for_staff(self):
+        self.make_user_staff()
+        response = self.client.get(reverse("admin_dashboard"))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Admin Dashboard")
@@ -160,16 +164,16 @@ class AdminDashboardPageTests(AuthenticatedPageTestCase):
         self.assertContains(response, f'class="active" href="{reverse("admin_dashboard")}"')
         self.assertContains(response, reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
 
-    def test_admin_dashboard_is_not_available_when_toggle_is_disabled(self):
-        with patch("base.views.IS_ADMIN", False):
-            response = self.client.get(reverse("admin_dashboard"))
+    def test_admin_dashboard_is_not_available_for_customer(self):
+        response = self.client.get(reverse("admin_dashboard"))
 
         self.assertEqual(response.status_code, 404)
 
 
 class AdminViewBookingPageTests(AuthenticatedPageTestCase):
-    def test_confirmed_booking_renders_admin_controls_when_enabled(self):
-        with patch("base.views.IS_ADMIN", True), patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "booking_confirmed"):
+    def test_confirmed_booking_renders_admin_controls_for_staff(self):
+        self.make_user_staff()
+        with patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "booking_confirmed"):
             response = self.client.get(reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
 
         self.assertEqual(response.status_code, 200)
@@ -183,7 +187,8 @@ class AdminViewBookingPageTests(AuthenticatedPageTestCase):
         self.assertContains(response, f'class="active" href="{reverse("admin_dashboard")}"')
 
     def test_pending_quotation_simulation_displays_quotation_form(self):
-        with patch("base.views.IS_ADMIN", True), patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "pending_quotation"):
+        self.make_user_staff()
+        with patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "pending_quotation"):
             response = self.client.get(reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
 
         self.assertContains(response, "Pending Quotation")
@@ -195,7 +200,8 @@ class AdminViewBookingPageTests(AuthenticatedPageTestCase):
         self.assertNotContains(response, 'aria-label="Payment verification"')
 
     def test_payment_verification_simulation_displays_review_actions(self):
-        with patch("base.views.IS_ADMIN", True), patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "payment_verification"):
+        self.make_user_staff()
+        with patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "payment_verification"):
             response = self.client.get(reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
 
         self.assertContains(response, "Payment Verification")
@@ -204,7 +210,8 @@ class AdminViewBookingPageTests(AuthenticatedPageTestCase):
         self.assertContains(response, "Customer payment receipt")
 
     def test_scheduled_simulation_only_displays_remaining_status_actions(self):
-        with patch("base.views.IS_ADMIN", True), patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "scheduled"):
+        self.make_user_staff()
+        with patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "scheduled"):
             response = self.client.get(reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
 
         self.assertContains(response, "Update Status")
@@ -213,7 +220,8 @@ class AdminViewBookingPageTests(AuthenticatedPageTestCase):
         self.assertNotContains(response, '<button type="button">Scheduled</button>')
 
     def test_in_progress_simulation_only_displays_completed_action(self):
-        with patch("base.views.IS_ADMIN", True), patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "in_progress"):
+        self.make_user_staff()
+        with patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "in_progress"):
             response = self.client.get(reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
 
         self.assertContains(response, "Update Status")
@@ -222,23 +230,22 @@ class AdminViewBookingPageTests(AuthenticatedPageTestCase):
         self.assertNotContains(response, '<button type="button">In Progress</button>')
 
     def test_existing_completed_dashboard_booking_keeps_its_status(self):
-        with patch("base.views.IS_ADMIN", True):
-            response = self.client.get(reverse("admin_view_booking", args=["BK-MPNJET1G"]))
+        self.make_user_staff()
+        response = self.client.get(reverse("admin_view_booking", args=["BK-MPNJET1G"]))
 
         self.assertContains(response, "Completed")
         self.assertNotContains(response, "Update Status")
 
-    def test_admin_booking_page_is_not_available_when_toggle_is_disabled(self):
-        with patch("base.views.IS_ADMIN", False):
-            response = self.client.get(reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
+    def test_admin_booking_page_is_not_available_for_customer(self):
+        response = self.client.get(reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
 
         self.assertEqual(response.status_code, 404)
 
 
 class ServiceSettingsPageTests(AuthenticatedPageTestCase):
-    def test_settings_page_renders_service_management_and_modals_when_enabled(self):
-        with patch("base.views.IS_ADMIN", True):
-            response = self.client.get(reverse("service_settings"))
+    def test_settings_page_renders_service_management_and_modals_for_staff(self):
+        self.make_user_staff()
+        response = self.client.get(reverse("service_settings"))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Service Settings")
@@ -254,9 +261,8 @@ class ServiceSettingsPageTests(AuthenticatedPageTestCase):
         self.assertContains(response, "site-header-admin")
         self.assertContains(response, f'class="active" href="{reverse("service_settings")}"')
 
-    def test_settings_page_is_not_available_when_toggle_is_disabled(self):
-        with patch("base.views.IS_ADMIN", False):
-            response = self.client.get(reverse("service_settings"))
+    def test_settings_page_is_not_available_for_customer(self):
+        response = self.client.get(reverse("service_settings"))
 
         self.assertEqual(response.status_code, 404)
 

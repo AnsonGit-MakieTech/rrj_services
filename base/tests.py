@@ -1,9 +1,12 @@
+import shutil
+import tempfile
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from unittest.mock import patch
 
-from base.models import Service
+from base.models import BookingRequest, Service
 
 
 class AuthenticatedPageTestCase(TestCase):
@@ -391,7 +394,99 @@ class AddBookingPageTests(AuthenticatedPageTestCase):
         self.assertContains(response, "Customer Information")
         self.assertContains(response, "Upload Project Files")
         self.assertContains(response, "data-attachment-list")
-        self.assertContains(response, '<option value="Condo Renovation" selected>')
+        self.assertContains(response, 'data-booking-form')
+        self.assertContains(response, reverse("create_booking"))
+        self.assertContains(response, 'name="attachments"')
+        self.assertContains(response, "data-booking-confirmation-modal")
+        self.assertContains(response, "js/add_booking.")
+        self.assertContains(response, "data-booking-select")
+        self.assertContains(response, "data-booking-date-field")
+        self.assertContains(response, "Optional target visit day")
+        self.assertContains(response, "Condo Renovation")
+        self.assertNotContains(response, '<select name="service_id"')
+
+
+class ManageBookingApiTests(AuthenticatedPageTestCase):
+    def setUp(self):
+        super().setUp()
+        self.media_root = tempfile.mkdtemp()
+        self.media_override = self.settings(MEDIA_ROOT=self.media_root)
+        self.media_override.enable()
+        self.addCleanup(self.media_override.disable)
+        self.addCleanup(shutil.rmtree, self.media_root, ignore_errors=True)
+
+    def test_customer_can_create_booking_with_multiple_images(self):
+        service = Service.objects.create(
+            name="Wall Repair",
+            is_active=True,
+            status="available",
+        )
+        image_one = SimpleUploadedFile(
+            "before.png",
+            b"image-one",
+            content_type="image/png",
+        )
+        image_two = SimpleUploadedFile(
+            "angle.jpg",
+            b"image-two",
+            content_type="image/jpeg",
+        )
+
+        response = self.client.post(
+            reverse("create_booking"),
+            {
+                "full_name": "Makie Tech",
+                "email": "techmakie@gmail.com",
+                "contact_number": "09123456789",
+                "full_address": "Manila",
+                "service_id": str(service.id),
+                "urgency_level": "high",
+                "preferred_date": "2026-06-01",
+                "square_meters": "24.5",
+                "project_location": "Kitchen wall",
+                "service_description": "Repair and repaint",
+                "problem_description": "Cracked wall",
+                "attachments": [image_one, image_two],
+            },
+        )
+
+        self.assertEqual(response.status_code, 201)
+        payload = response.json()
+        self.assertTrue(payload["success"])
+        self.assertTrue(payload["reference_number"].startswith("BK-"))
+        self.assertEqual(payload["redirect_url"], reverse("view_booking", args=[payload["reference_number"]]))
+
+        booking = BookingRequest.objects.get(reference_number=payload["reference_number"])
+        self.assertEqual(booking.owner, self.user)
+        self.assertEqual(booking.service, service)
+        self.assertEqual(booking.urgency_level, "high")
+        self.assertEqual(booking.attachments.count(), 2)
+
+    def test_booking_api_rejects_non_image_attachment(self):
+        service = Service.objects.create(
+            name="Painting",
+            is_active=True,
+            status="available",
+        )
+        attachment = SimpleUploadedFile(
+            "scope.pdf",
+            b"not-an-image",
+            content_type="application/pdf",
+        )
+
+        response = self.client.post(
+            reverse("create_booking"),
+            {
+                "full_name": "Makie Tech",
+                "email": "techmakie@gmail.com",
+                "service_id": str(service.id),
+                "attachments": [attachment],
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(response.json()["success"])
+        self.assertEqual(BookingRequest.objects.count(), 0)
 
 
 class ViewBookingPageTests(AuthenticatedPageTestCase):

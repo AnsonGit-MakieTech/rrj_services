@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
     <script src="{% static 'js/home.js' %}" defer></script>
+    <script src="{% static 'js/add_booking.js' %}" defer></script>
 </head>
 <body>
     {% include "base/includes/header.html" %}
@@ -23,25 +24,27 @@
                     <p>Fill in the details below and we'll send you a quotation.</p>
                 </div>
 
-                <form class="booking-form">
+                <form class="booking-form" method="post" action="{% url 'create_booking' %}" enctype="multipart/form-data" data-booking-form>
+                    {% csrf_token %}
+                    <p class="booking-form-message" data-booking-message aria-live="polite" hidden></p>
                     <fieldset class="form-panel">
                         <legend>Customer Information</legend>
                         <div class="form-grid">
                             <label class="form-field">
                                 <span>Full Name <b>*</b></span>
-                                <input type="text" value="{{ display_name }}" required>
+                                <input type="text" name="full_name" value="{{ display_name }}" autocomplete="name" required>
                             </label>
                             <label class="form-field">
                                 <span>Email <b>*</b></span>
-                                <input type="email" value="techmakie@gmail.com" required>
+                                <input type="email" name="email" value="{{ user_email }}" autocomplete="email" required>
                             </label>
                             <label class="form-field">
                                 <span>Contact Number</span>
-                                <input type="tel">
+                                <input type="tel" name="contact_number" value="{{ user_contact_number }}" autocomplete="tel">
                             </label>
                             <label class="form-field">
                                 <span>Full Address</span>
-                                <input type="text">
+                                <input type="text" name="full_address" value="{{ user_full_address }}" autocomplete="street-address">
                             </label>
                         </div>
                     </fieldset>
@@ -49,77 +52,176 @@
                     <fieldset class="form-panel">
                         <legend>Service Information</legend>
                         <div class="form-grid">
-                            <label class="form-field">
-                                <span>Service Category <b>*</b></span>
-                                <select required>
-                                    <option value="" {% if not selected_service %}selected{% endif %}>Select service</option>
-                                    {% for service in services %}
-                                    <option value="{{ service.name }}" {% if selected_service == service.name %}selected{% endif %}>{{ service.name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </label>
-                            <label class="form-field">
-                                <span>Urgency Level</span>
-                                <select>
-                                    <option>Low</option>
-                                    <option selected>Medium</option>
-                                    <option>High</option>
-                                    <option>Emergency</option>
-                                </select>
-                            </label>
-                            <label class="form-field">
-                                <span>Preferred Schedule</span>
-                                <input type="date">
-                            </label>
+                            <div class="form-field booking-select-field">
+                                <span id="service-category-label">Service Category <b>*</b></span>
+                                <div
+                                    class="booking-select"
+                                    data-booking-select
+                                    data-booking-select-required
+                                    data-placeholder-label="Select service"
+                                    data-placeholder-help="Choose the work you need"
+                                >
+                                    <input type="hidden" name="service_id" value="{{ selected_service_id }}" data-booking-select-value>
+                                    <button
+                                        class="booking-select-toggle"
+                                        type="button"
+                                        aria-expanded="false"
+                                        aria-haspopup="listbox"
+                                        aria-labelledby="service-category-label service-category-value"
+                                        aria-controls="service-category-options"
+                                        data-booking-select-toggle
+                                    >
+                                        <span>
+                                            <b id="service-category-value" class="{% if not selected_service_id %}booking-select-placeholder{% endif %}" data-booking-select-label>{% if selected_service_label %}{{ selected_service_label }}{% else %}Select service{% endif %}</b>
+                                            <small data-booking-select-help>{% if selected_service_label %}Ready for quotation request{% else %}Choose the work you need{% endif %}</small>
+                                        </span>
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
+                                    </button>
+                                    <div class="booking-select-options" id="service-category-options" role="listbox" aria-labelledby="service-category-label" data-booking-select-options hidden>
+                                        {% for service in services %}
+                                        <button
+                                            class="booking-select-option"
+                                            type="button"
+                                            role="option"
+                                            aria-selected="{% if selected_service_id == service.id %}true{% else %}false{% endif %}"
+                                            data-booking-select-option="{{ service.id }}"
+                                            data-booking-select-label="{{ service.name }}"
+                                            data-booking-select-help="{{ service.price_range }}"
+                                        >
+                                            <span>{{ service.name }}</span>
+                                            <small>{{ service.price_range }}</small>
+                                        </button>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-field booking-select-field">
+                                <span id="urgency-level-label">Urgency Level</span>
+                                <div class="booking-select" data-booking-select>
+                                    <input type="hidden" name="urgency_level" value="medium" data-booking-select-value>
+                                    <button
+                                        class="booking-select-toggle"
+                                        type="button"
+                                        aria-expanded="false"
+                                        aria-haspopup="listbox"
+                                        aria-labelledby="urgency-level-label urgency-level-value"
+                                        aria-controls="urgency-level-options"
+                                        data-booking-select-toggle
+                                    >
+                                        <span>
+                                            <b id="urgency-level-value" data-booking-select-label>Medium</b>
+                                            <small data-booking-select-help>Standard priority</small>
+                                        </span>
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
+                                    </button>
+                                    <div class="booking-select-options" id="urgency-level-options" role="listbox" aria-labelledby="urgency-level-label" data-booking-select-options hidden>
+                                        <button class="booking-select-option" type="button" role="option" aria-selected="false" data-booking-select-option="low" data-booking-select-label="Low" data-booking-select-help="Flexible schedule">
+                                            <span>Low</span>
+                                            <small>Flexible schedule</small>
+                                        </button>
+                                        <button class="booking-select-option" type="button" role="option" aria-selected="true" data-booking-select-option="medium" data-booking-select-label="Medium" data-booking-select-help="Standard priority">
+                                            <span>Medium</span>
+                                            <small>Standard priority</small>
+                                        </button>
+                                        <button class="booking-select-option" type="button" role="option" aria-selected="false" data-booking-select-option="high" data-booking-select-label="High" data-booking-select-help="Needs faster attention">
+                                            <span>High</span>
+                                            <small>Needs faster attention</small>
+                                        </button>
+                                        <button class="booking-select-option" type="button" role="option" aria-selected="false" data-booking-select-option="emergency" data-booking-select-label="Emergency" data-booking-select-help="Urgent issue">
+                                            <span>Emergency</span>
+                                            <small>Urgent issue</small>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-field booking-date-field">
+                                <span id="preferred-schedule-label">Preferred Schedule</span>
+                                <div class="booking-date-picker" data-booking-date-field>
+                                    <input class="booking-date-input" type="date" name="preferred_date" aria-labelledby="preferred-schedule-label" data-booking-date-input>
+                                    <button
+                                        class="booking-date-trigger"
+                                        type="button"
+                                        aria-labelledby="preferred-schedule-label preferred-schedule-value"
+                                        data-booking-date-trigger
+                                    >
+                                        <span>
+                                            <b id="preferred-schedule-value" data-booking-date-label>Pick a date</b>
+                                            <small data-booking-date-help>Optional target visit day</small>
+                                        </span>
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2v4m8-4v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg>
+                                    </button>
+                                </div>
+                            </div>
                             <label class="form-field">
                                 <span>Square Meters (SQM)</span>
-                                <input type="number" min="0" step="0.01">
+                                <input type="number" name="square_meters" min="0" step="0.01">
                             </label>
                             <label class="form-field form-span">
                                 <span>Project Location</span>
-                                <input type="text">
+                                <input type="text" name="project_location">
                             </label>
                             <label class="form-field form-span">
                                 <span>Service Description</span>
-                                <textarea rows="3"></textarea>
+                                <textarea rows="3" name="service_description"></textarea>
                             </label>
                             <label class="form-field form-span">
                                 <span>Problem Description / Notes</span>
-                                <textarea rows="3"></textarea>
+                                <textarea rows="3" name="problem_description"></textarea>
                             </label>
                         </div>
                     </fieldset>
 
                     <fieldset class="form-panel upload-panel">
                         <legend>Upload Project Files</legend>
-                        <p>Upload images or videos of the project for quotation assessment.</p>
+                        <p>Upload images of the project for quotation assessment.</p>
                         <label class="file-upload">
                             <input
                                 class="sr-only"
                                 type="file"
-                                accept=".jpg,.jpeg,.png,.mp4,.mov"
+                                name="attachments"
+                                accept=".jpg,.jpeg,.png,.webp"
                                 multiple
                                 data-file-input
                             >
                             <svg viewBox="0 0 24 24" aria-hidden="true">
                                 <path d="M12 16V3m0 0L7 8m5-5 5 5M5 14v6h14v-6"/>
                             </svg>
-                            <span>Click to upload (JPG, PNG, MP4, MOV)</span>
+                            <span>Click to upload images (JPG, PNG, WEBP)</span>
                         </label>
                         <div class="attachment-list" data-attachment-list aria-live="polite"></div>
                     </fieldset>
 
-                    <button type="button" class="submit-booking">
+                    <button type="submit" class="submit-booking" data-booking-submit>
+                        <span class="booking-submit-spinner" aria-hidden="true"></span>
                         <svg viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/>
                             <path d="m22 4-10 10.01-3-3"/>
                         </svg>
-                        Submit Booking Request
+                        <span data-booking-submit-label>Submit Booking Request</span>
                     </button>
                 </form>
             </div>
         </section>
     </main>
+
+    <section class="booking-confirmation-modal" data-booking-confirmation-modal hidden>
+        <div class="service-modal-backdrop" data-booking-confirmation-close></div>
+        <div class="booking-confirmation-card" role="dialog" aria-modal="true" aria-labelledby="booking-confirmation-title">
+            <div class="booking-confirmation-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="m7 12 3 3 7-7"/><circle cx="12" cy="12" r="9"/></svg>
+            </div>
+            <h2 id="booking-confirmation-title">Booking request sent</h2>
+            <p>Your request is now waiting for quotation review.</p>
+            <div class="booking-confirmation-reference">
+                <span>Reference Number</span>
+                <strong data-booking-confirmation-reference>BK-00000000</strong>
+            </div>
+            <footer class="service-modal-actions">
+                <a class="service-cancel" href="{% url 'my_bookings' %}">My Bookings</a>
+                <a class="service-save" href="{% url 'my_bookings' %}" data-booking-confirmation-link>View Request</a>
+            </footer>
+        </div>
+    </section>
 
     {% include "base/includes/footer.html" %}
 </body>

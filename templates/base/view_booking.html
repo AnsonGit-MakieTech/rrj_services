@@ -46,7 +46,18 @@
                             {% endif %}
                         </dl>
 
-                        {% if booking.attachment_url %}
+                        {% if booking.attachments %}
+                        <div class="detail-files">
+                            <p>Uploaded Files</p>
+                            <div class="detail-file-grid">
+                                {% for attachment in booking.attachments %}
+                                <a href="{{ attachment.url }}" target="_blank" rel="noopener" aria-label="Open {{ attachment.name }}">
+                                    <img src="{{ attachment.url }}" alt="{{ attachment.name }}" loading="lazy">
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% elif booking.attachment_url %}
                         <div class="detail-files">
                             <p>Uploaded Files</p>
                             <img src="{{ booking.attachment_url }}" alt="Uploaded project reference" loading="lazy">

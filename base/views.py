@@ -2,8 +2,10 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import redirect, render
 from apis.authentications import api_login, api_register, logout_page
+from apis.manage_booking import create_booking
 from apis.manage_service import create_service, delete_service, toggle_service_status, update_service
-from base.models import Service
+from base.models import BookingRequest, Service
+from apis.manage_booking import *
 
 
 ADMIN_STATS = [
@@ -333,10 +335,65 @@ def _progress_steps(state):
     return steps
 
 
-def _bookings_for_dashboard():
+def _format_display_date(value):
+    return value.strftime("%b %d, %Y").replace(" 0", " ")
+
+
+def _booking_request_card(booking):
+    return {
+        "reference": booking.reference_number,
+        "service": booking.service.name,
+        "status": booking.get_progress_display(),
+        "date": _format_display_date(booking.created_at),
+        "description": booking.problem_description or booking.service_description,
+    }
+
+
+def _booking_request_detail(booking):
+    attachments = [
+        {
+            "name": attachment.file.name.rsplit("/", 1)[-1],
+            "url": attachment.file.url,
+        }
+        for attachment in booking.attachments.all()
+        if attachment.file
+    ]
+
+    return {
+        "reference": booking.reference_number,
+        "service": booking.service.name,
+        "status": booking.get_progress_display(),
+        "email": booking.email or "-",
+        "phone": booking.contact_number or "-",
+        "location": booking.project_location or booking.full_address or "-",
+        "sqm": booking.square_meters or "-",
+        "urgency": booking.get_urgency_level_display(),
+        "schedule": booking.preferred_date or "-",
+        "description": booking.problem_description or booking.service_description,
+        "attachments": attachments,
+        "attachment_url": attachments[0]["url"] if attachments else "",
+        "quotation": {
+            "materials": f"PHP {booking.material_cost:,.0f}",
+            "labor": f"PHP {booking.labor_cost:,.0f}",
+            "total": f"PHP {booking.total_cost:,.0f}",
+            "notes": booking.transaction_notes or "Quotation details will appear here.",
+        },
+        "payment": {
+            "amount": f"PHP {booking.amount_paid:,.0f}",
+            "method": booking.get_payment_method_display(),
+            "reference": booking.reference_number or "-",
+            "receipt_url": booking.receipt_screenshot.url if booking.receipt_screenshot else "",
+        },
+    }
+
+
+def _bookings_for_dashboard(user=None):
     bookings = [booking.copy() for booking in BOOKINGS]
     if bookings:
         bookings[0]["status"] = _simulated_state()["label"]
+    if user and user.is_authenticated:
+        user_bookings = BookingRequest.objects.filter(owner=user).select_related("service").order_by("-created_at")
+        bookings = [_booking_request_card(booking) for booking in user_bookings] + bookings
     return bookings
 
 
@@ -552,6 +609,11 @@ def services(request):
 
 @login_required
 def my_bookings(request):
+    bookings = _bookings_for_dashboard(request.user)
+    pending_count = sum(1 for booking in bookings if booking["status"] == "Pending Quotation")
+    completed_count = sum(1 for booking in bookings if booking["status"] == "Completed")
+    active_count = max(len(bookings) - pending_count - completed_count, 0)
+
     return render(
         request,
         "base/my_bookings.html",
@@ -559,12 +621,12 @@ def my_bookings(request):
             "active_page": "bookings",
             "display_name": _display_name(request),
             "is_admin": _is_admin(request),
-            "bookings": _bookings_for_dashboard(),
+            "bookings": bookings,
             "booking_stats": [
-                {"label": "Total", "value": "2", "kind": "total"},
-                {"label": "Pending", "value": "2", "kind": "pending"},
-                {"label": "Active", "value": "0", "kind": "active"},
-                {"label": "Completed", "value": "0", "kind": "completed"},
+                {"label": "Total", "value": str(len(bookings)), "kind": "total"},
+                {"label": "Pending", "value": str(pending_count), "kind": "pending"},
+                {"label": "Active", "value": str(active_count), "kind": "active"},
+                {"label": "Completed", "value": str(completed_count), "kind": "completed"},
             ],
         },
     )
@@ -574,8 +636,8 @@ def my_bookings(request):
 def add_booking(request):
     selected_service = request.GET.get("service", "")
     services = _service_queryset()
-    service_names = {service.name for service in services}
-    if selected_service not in service_names:
+    selected_service_obj = next((service for service in services if service.name == selected_service), None)
+    if selected_service_obj is None:
         selected_service = ""
 
     return render(
@@ -587,12 +649,39 @@ def add_booking(request):
             "is_admin": _is_admin(request),
             "services": services,
             "selected_service": selected_service,
+            "selected_service_id": selected_service_obj.id if selected_service_obj else "",
+            "selected_service_label": selected_service_obj.name if selected_service_obj else "",
+            "user_email": request.user.email or "",
+            "user_contact_number": getattr(request.user, "contact_number", "") or "",
+            "user_full_address": getattr(request.user, "full_address", "") or "",
         },
     )
 
 
 @login_required
 def view_booking(request, reference):
+    booking_request = (
+        BookingRequest.objects.filter(owner=request.user, reference_number=reference)
+        .select_related("service")
+        .prefetch_related("attachments")
+        .first()
+    )
+    if booking_request:
+        state = BOOKING_VIEW_STATES.get(booking_request.progress, BOOKING_VIEW_STATES["pending_quotation"])
+        booking = _booking_request_detail(booking_request)
+        return render(
+            request,
+            "base/view_booking.html",
+            {
+                "active_page": "bookings",
+                "display_name": _display_name(request),
+                "is_admin": _is_admin(request),
+                "booking": booking,
+                "state": state,
+                "progress_steps": _progress_steps(state),
+            },
+        )
+
     booking = next((booking.copy() for booking in BOOKINGS if booking["reference"] == reference), None)
     if booking is None:
         raise Http404("Booking not found")

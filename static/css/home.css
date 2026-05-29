@@ -1787,6 +1787,12 @@ svg {
     font-size: 14px;
 }
 
+.settings-heading-actions {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+}
+
 .settings-add {
     box-shadow: none;
     gap: 8px;
@@ -1794,9 +1800,36 @@ svg {
     padding: 0 18px;
 }
 
-.settings-add svg {
+.settings-add svg,
+.settings-system-button svg {
     height: 15px;
     width: 15px;
+}
+
+.settings-system-button {
+    align-items: center;
+    background: var(--color-surface);
+    border: 1px solid #d7dfec;
+    border-radius: 11px;
+    color: var(--color-text-primary);
+    display: flex;
+    font-size: 13px;
+    font-weight: 600;
+    gap: 8px;
+    min-height: 39px;
+    padding: 0 16px;
+    transition: background var(--motion-fast) ease, border-color var(--motion-fast) ease, color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
+}
+
+.settings-system-button:hover {
+    background: var(--color-surface-soft);
+    border-color: #c7d2fe;
+    color: var(--color-brand-indigo);
+}
+
+.settings-system-button:focus-visible {
+    box-shadow: 0 0 0 3px rgba(96, 24, 240, .12);
+    outline: 0;
 }
 
 .settings-search {
@@ -2124,6 +2157,22 @@ body.modal-open {
 .service-modal-card h2 {
     font-size: 19px;
     letter-spacing: -.045em;
+}
+
+.system-settings-card {
+    width: min(520px, 100%);
+}
+
+.system-settings-card header {
+    align-items: flex-start;
+}
+
+.system-settings-card header p {
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-top: 6px;
+    max-width: 370px;
 }
 
 .service-modal-close {
@@ -4824,8 +4873,21 @@ body.modal-open {
         font-size: 27px;
     }
 
+    .settings-heading-actions {
+        align-items: stretch;
+        flex-direction: column;
+        width: 100%;
+    }
+
     .settings-add {
         min-height: 37px;
+        width: 100%;
+    }
+
+    .settings-system-button {
+        justify-content: center;
+        min-height: 37px;
+        width: 100%;
     }
 
     .settings-search {

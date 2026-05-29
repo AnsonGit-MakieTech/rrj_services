@@ -21,12 +21,18 @@
             <header class="settings-heading">
                 <div>
                     <h1>Service Settings</h1>
-                    <p>Manage service categories and pricing.</p>
+                    <p>Manage homepage content, service categories, and pricing.</p>
                 </div>
-                <button class="settings-add button button-primary" type="button" data-service-modal-open="add">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-                    Add Service
-                </button>
+                <div class="settings-heading-actions">
+                    <button class="settings-system-button" type="button" data-system-settings-open>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h10M4 19h16"/></svg>
+                        Homepage Content
+                    </button>
+                    <button class="settings-add button button-primary" type="button" data-service-modal-open="add">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                        Add Service
+                    </button>
+                </div>
             </header>
 
             <label class="settings-search">
@@ -115,6 +121,44 @@
     </main>
 
     {% include "base/includes/footer.html" %}
+
+    <section class="service-modal" data-system-settings-modal hidden>
+        <div class="service-modal-backdrop" data-system-settings-close></div>
+        <form class="service-modal-card system-settings-card" method="post" action="{% url 'update_system_settings' %}" aria-labelledby="system-settings-title">
+            {% csrf_token %}
+            <header>
+                <div>
+                    <h2 id="system-settings-title">Homepage Content</h2>
+                    <p>Update the hero tagline and description. Blank fields use the default homepage copy.</p>
+                </div>
+                <button type="button" class="service-modal-close" aria-label="Close homepage content form" data-system-settings-close>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6 18 18M18 6 6 18"/></svg>
+                </button>
+            </header>
+            <label class="service-modal-field">
+                <span>Tagline</span>
+                <input
+                    type="text"
+                    name="tagline"
+                    maxlength="255"
+                    value="{{ system_settings.tagline }}"
+                    placeholder="{{ system_settings.default_tagline }}"
+                >
+            </label>
+            <label class="service-modal-field">
+                <span>Description</span>
+                <textarea
+                    rows="4"
+                    name="description"
+                    placeholder="{{ system_settings.default_description }}"
+                >{{ system_settings.description }}</textarea>
+            </label>
+            <footer class="service-modal-actions">
+                <button class="service-cancel" type="button" data-system-settings-close>Cancel</button>
+                <button class="service-save" type="submit">Save Changes</button>
+            </footer>
+        </form>
+    </section>
 
     <section class="service-modal" data-service-modal="add" hidden>
         <div class="service-modal-backdrop" data-service-modal-close></div>

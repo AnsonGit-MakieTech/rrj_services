@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Home | RRJ's Maintenance Services</title>
-    <meta name="description" content="Book professional construction and maintenance services with RRJ's Maintenance Services.">
+    <meta name="description" content="{{ home_content.description }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
@@ -25,10 +25,15 @@
                         </svg>
                         Trusted by 500+ clients
                     </p>
-                    <h1>Build Better.<br><span>Maintain Smarter.</span></h1>
+                    <h1>
+                        {% if home_content.has_custom_tagline %}
+                        {{ home_content.tagline|linebreaksbr }}
+                        {% else %}
+                        Build Better.<br><span>Maintain Smarter.</span>
+                        {% endif %}
+                    </h1>
                     <p class="hero-description">
-                        Professional construction and maintenance services at your fingertips.
-                        Book online, get detailed quotations, and track your project in real time.
+                        {{ home_content.description }}
                     </p>
                     <div class="hero-buttons">
                         <a class="button button-primary" href="{% url 'services' %}">

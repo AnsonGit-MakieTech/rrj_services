@@ -20,6 +20,7 @@ urlpatterns = [
     path("api/services/update/", views.update_service, name="update_service"),
     path("api/services/<int:service_id>/toggle/", views.toggle_service_status, name="toggle_service_status"),
     path("api/services/<int:service_id>/delete/", views.delete_service, name="delete_service"),
+    path("api/system-settings/update/", views.update_system_settings, name="update_system_settings"),
     path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path("admin-dashboard/bookings/<str:reference>/", views.admin_view_booking, name="admin_view_booking"),
     path("settings/", views.service_settings, name="service_settings"),

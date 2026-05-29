@@ -5,7 +5,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
-from base.models import BookingRequest, ChatMessage, Service
+from base.models import BookingRequest, ChatMessage, Service, SystemSettings
 
 
 class AuthenticatedPageTestCase(TestCase):
@@ -72,6 +72,18 @@ class HomePageTests(AuthenticatedPageTestCase):
         self.assertContains(response, "assets/rrj-logo-icon")
         self.assertContains(response, "images.unsplash.com")
         self.assertContains(response, 'alt="Condo Renovation"')
+
+    def test_home_page_uses_system_settings_when_available(self):
+        SystemSettings.objects.create(
+            tagline="Reliable repairs for busy property owners",
+            description="Book maintenance, review quotations, and track work from one place.",
+        )
+
+        response = self.client.get(reverse("home"))
+
+        self.assertContains(response, "Reliable repairs for busy property owners")
+        self.assertContains(response, "Book maintenance, review quotations, and track work from one place.")
+        self.assertNotContains(response, "Build Better.")
 
     def test_staff_user_renders_admin_navigation_variant(self):
         self.make_user_staff()
@@ -348,7 +360,15 @@ class ServiceSettingsPageTests(AuthenticatedPageTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Service Settings")
-        self.assertContains(response, "Manage service categories and pricing.")
+        self.assertContains(response, "Manage homepage content, service categories, and pricing.")
+        self.assertContains(response, "Homepage Content")
+        self.assertContains(response, "data-system-settings-open")
+        self.assertContains(response, "data-system-settings-modal")
+        self.assertContains(response, "data-system-settings-close")
+        self.assertContains(response, reverse("update_system_settings"))
+        self.assertContains(response, 'name="tagline"')
+        self.assertContains(response, 'name="description"')
+        self.assertContains(response, "Blank fields use the default homepage copy.")
         self.assertContains(response, "Baseboard Maker")
         self.assertContains(response, "data-settings-search")
         self.assertContains(response, "data-service-modal=\"add\"")
@@ -370,6 +390,64 @@ class ServiceSettingsPageTests(AuthenticatedPageTestCase):
         response = self.client.get(reverse("service_settings"))
 
         self.assertEqual(response.status_code, 404)
+
+
+class ManageSystemSettingsApiTests(AuthenticatedPageTestCase):
+    def test_staff_can_update_homepage_content(self):
+        self.make_user_staff()
+
+        response = self.client.post(
+            reverse("update_system_settings"),
+            {
+                "tagline": "Reliable repairs for every property",
+                "description": "Request work, approve quotations, and track progress online.",
+            },
+        )
+
+        self.assertRedirects(response, reverse("service_settings"))
+        settings = SystemSettings.objects.latest("pk")
+        self.assertEqual(settings.tagline, "Reliable repairs for every property")
+        self.assertEqual(settings.description, "Request work, approve quotations, and track progress online.")
+
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, "Reliable repairs for every property")
+        self.assertContains(response, "Request work, approve quotations, and track progress online.")
+
+    def test_staff_can_reset_homepage_content_to_defaults(self):
+        self.make_user_staff()
+        SystemSettings.objects.create(
+            tagline="Old custom copy",
+            description="Old custom description.",
+        )
+
+        response = self.client.post(
+            reverse("update_system_settings"),
+            {
+                "tagline": "",
+                "description": "",
+            },
+        )
+
+        self.assertRedirects(response, reverse("service_settings"))
+        settings = SystemSettings.objects.latest("pk")
+        self.assertEqual(settings.tagline, "")
+        self.assertEqual(settings.description, "")
+
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, "Build Better.")
+        self.assertContains(response, "Professional construction and maintenance services at your fingertips.")
+
+    def test_customer_cannot_update_homepage_content(self):
+        response = self.client.post(
+            reverse("update_system_settings"),
+            {
+                "tagline": "Blocked",
+                "description": "Blocked",
+            },
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(SystemSettings.objects.exists())
 
 
 class ManageServiceApiTests(AuthenticatedPageTestCase):

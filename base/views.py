@@ -15,6 +15,7 @@ from apis.booking_transactions import (
 )
 from apis.manage_booking import create_booking
 from apis.manage_service import create_service, delete_service, toggle_service_status, update_service
+from apis.manage_system_settings import update_system_settings
 from apis.my_booking import get_my_booking_context
 from base.booking_context import (
     BOOKING_VIEW_STATES,
@@ -25,6 +26,7 @@ from base.booking_context import (
     progress_steps,
 )
 from base.service_context import service_cards, service_queryset, service_status_choices
+from base.system_context import home_content, system_settings_form
 from base.user_context import display_name, is_admin
 
 
@@ -38,6 +40,7 @@ def home(request):
             "display_name": display_name(request),
             "is_admin": is_admin(request),
             "services": service_cards(limit=8),
+            "home_content": home_content(),
         },
     )
 
@@ -119,6 +122,7 @@ def service_settings(request):
             "is_admin": True,
             "admin_services": service_queryset(visible_only=False),
             "service_status_choices": service_status_choices(),
+            "system_settings": system_settings_form(),
         },
     )
 

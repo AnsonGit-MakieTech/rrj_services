@@ -12,6 +12,9 @@
     const serviceDeleteClosers = document.querySelectorAll("[data-service-delete-close]");
     const serviceDeleteForm = document.querySelector("[data-service-delete-form]");
     const serviceDeleteLabel = document.querySelector("[data-service-delete-label]");
+    const systemSettingsOpeners = document.querySelectorAll("[data-system-settings-open]");
+    const systemSettingsModal = document.querySelector("[data-system-settings-modal]");
+    const systemSettingsClosers = document.querySelectorAll("[data-system-settings-close]");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     function showAnimated(element) {
@@ -126,6 +129,15 @@
         document.body.classList.remove("modal-open");
     }
 
+    function closeSystemSettingsModal() {
+        if (!systemSettingsModal) {
+            return;
+        }
+
+        hideAnimated(systemSettingsModal);
+        document.body.classList.remove("modal-open");
+    }
+
     if (settingsSearch && settingsEmpty) {
         settingsSearch.addEventListener("input", function () {
             const query = settingsSearch.value.toLowerCase().trim();
@@ -222,6 +234,25 @@
         });
     }
 
+    if (systemSettingsModal) {
+        systemSettingsOpeners.forEach(function (opener) {
+            opener.addEventListener("click", function () {
+                serviceModals.forEach(function (modal) {
+                    hideAnimated(modal);
+                });
+                closeServiceStatusSelects();
+                closeServiceDeleteModal();
+                showAnimated(systemSettingsModal);
+                document.body.classList.add("modal-open");
+                systemSettingsModal.querySelector("input").focus();
+            });
+        });
+
+        systemSettingsClosers.forEach(function (closer) {
+            closer.addEventListener("click", closeSystemSettingsModal);
+        });
+    }
+
     if (serviceModals.length) {
         const editModal = document.querySelector("[data-service-modal=\"edit\"]");
 
@@ -300,6 +331,7 @@
             }
 
             closeServiceModals();
+            closeSystemSettingsModal();
             showAnimated(modal);
             document.body.classList.add("modal-open");
             modal.querySelector("input").focus();
@@ -320,6 +352,7 @@
                 closeServiceStatusSelects();
                 closeServiceModals();
                 closeServiceDeleteModal();
+                closeSystemSettingsModal();
             }
         });
     }

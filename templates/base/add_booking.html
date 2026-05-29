@@ -207,18 +207,42 @@
     <section class="booking-confirmation-modal" data-booking-confirmation-modal hidden>
         <div class="service-modal-backdrop" data-booking-confirmation-close></div>
         <div class="booking-confirmation-card" role="dialog" aria-modal="true" aria-labelledby="booking-confirmation-title">
-            <div class="booking-confirmation-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24"><path d="m7 12 3 3 7-7"/><circle cx="12" cy="12" r="9"/></svg>
-            </div>
-            <h2 id="booking-confirmation-title">Booking request sent</h2>
-            <p>Your request is now waiting for quotation review.</p>
+            <button class="booking-confirmation-close" type="button" aria-label="Close confirmation" data-booking-confirmation-close>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6 18 18M18 6 6 18"/></svg>
+            </button>
+            <header class="booking-confirmation-header">
+                <div class="booking-confirmation-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="m7 12 3 3 7-7"/><circle cx="12" cy="12" r="9"/></svg>
+                </div>
+                <div>
+                    <p class="booking-confirmation-kicker">RRJ's Maintenance Services</p>
+                    <h2 id="booking-confirmation-title">Request submitted</h2>
+                </div>
+            </header>
+            <p class="booking-confirmation-copy">
+                Your project details were received. Our team will review the scope and prepare your quotation.
+            </p>
             <div class="booking-confirmation-reference">
-                <span>Reference Number</span>
+                <span>Booking Reference</span>
                 <strong data-booking-confirmation-reference>BK-00000000</strong>
             </div>
-            <footer class="service-modal-actions">
-                <a class="service-cancel" href="{% url 'my_bookings' %}">My Bookings</a>
-                <a class="service-save" href="{% url 'my_bookings' %}" data-booking-confirmation-link>View Request</a>
+            <ul class="booking-confirmation-steps" aria-label="Next steps">
+                <li>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+                    <span>Quotation review is now pending</span>
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l.7 3a2 2 0 0 1-.6 1.9L7.9 9.9a16 16 0 0 0 6.2 6.2l1.3-1.3a2 2 0 0 1 1.9-.6l3 .7a2 2 0 0 1 1.7 2Z"/></svg>
+                    <span>We will contact you if details are needed</span>
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v5l3 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/></svg>
+                    <span>Track progress from My Bookings</span>
+                </li>
+            </ul>
+            <footer class="booking-confirmation-actions">
+                <a class="booking-confirmation-secondary" href="{% url 'my_bookings' %}">My Bookings</a>
+                <a class="booking-confirmation-primary" href="{% url 'my_bookings' %}" data-booking-confirmation-link>Track Request</a>
             </footer>
         </div>
     </section>

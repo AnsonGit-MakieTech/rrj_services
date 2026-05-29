@@ -454,15 +454,78 @@ class ServicesPageTests(AuthenticatedPageTestCase):
 
 
 class MyBookingsPageTests(AuthenticatedPageTestCase):
-    def test_my_bookings_page_renders_dashboard_fixture_data(self):
+    def test_customer_my_bookings_page_renders_only_owned_bookings(self):
+        User = get_user_model()
+        other_user = User.objects.create_user(
+            username="639555000002",
+            password=None,
+            full_name="Other Customer",
+            contact_number="639555000002",
+        )
+        self.create_booking_request(
+            reference="BK-MINE0001",
+            service_name="Tiles Sitter",
+            full_name="Makie Tech",
+            progress="pending_quotation",
+        )
+        self.create_booking_request(
+            reference="BK-OTHER001",
+            owner=other_user,
+            service_name="Roof Repair",
+            full_name="Other Customer",
+            progress="completed",
+        )
+
         response = self.client.get(reverse("my_bookings"))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "My Bookings")
         self.assertContains(response, "New Booking")
+        self.assertContains(response, "Track your service requests and project progress.")
         self.assertContains(response, "Pending Quotation")
-        self.assertContains(response, "BK-MPL5LPV3")
-        self.assertContains(response, reverse("view_booking", args=["BK-MPL5LPV3"]))
+        self.assertContains(response, "BK-MINE0001")
+        self.assertContains(response, "Tiles Sitter")
+        self.assertContains(response, "data-my-booking-search")
+        self.assertContains(response, "data-my-booking-status-select")
+        self.assertContains(response, "js/my_booking.")
+        self.assertContains(response, reverse("view_booking", args=["BK-MINE0001"]))
+        self.assertNotContains(response, "BK-OTHER001")
+
+    def test_admin_my_bookings_page_renders_all_received_bookings(self):
+        self.make_user_staff()
+        User = get_user_model()
+        customer = User.objects.create_user(
+            username="639555000003",
+            password=None,
+            full_name="Maria Customer",
+            contact_number="639555000003",
+        )
+        self.create_booking_request(
+            reference="BK-ADMINALL1",
+            owner=customer,
+            service_name="Condo Renovation",
+            full_name="Maria Customer",
+            progress="completed",
+        )
+
+        response = self.client.get(reverse("my_bookings"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "All Bookings")
+        self.assertContains(response, "Review every customer request received")
+        self.assertContains(response, "New Booking")
+        self.assertContains(response, "BK-ADMINALL1")
+        self.assertContains(response, "Maria Customer")
+        self.assertContains(response, "Completed")
+        self.assertContains(response, f'href="{reverse("add_booking")}"')
+        self.assertContains(response, reverse("admin_view_booking", args=["BK-ADMINALL1"]))
+
+    def test_my_bookings_page_renders_empty_state(self):
+        response = self.client.get(reverse("my_bookings"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "No bookings yet")
+        self.assertContains(response, "Book a service to start a quotation request.")
 
 
 class AddBookingPageTests(AuthenticatedPageTestCase):

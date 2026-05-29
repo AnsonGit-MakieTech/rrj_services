@@ -5,6 +5,7 @@ from apis.admin_dashboard import get_admin_booking_detail, get_admin_dashboard_c
 from apis.authentications import api_login, api_register, logout_page
 from apis.manage_booking import create_booking
 from apis.manage_service import create_service, delete_service, toggle_service_status, update_service
+from apis.my_booking import get_my_booking_context
 from base.models import BookingRequest, Service
 
 
@@ -273,20 +274,6 @@ def _progress_steps(state):
     return steps
 
 
-def _format_display_date(value):
-    return value.strftime("%b %d, %Y").replace(" 0", " ")
-
-
-def _booking_request_card(booking):
-    return {
-        "reference": booking.reference_number,
-        "service": booking.service.name,
-        "status": booking.get_progress_display(),
-        "date": _format_display_date(booking.created_at),
-        "description": booking.problem_description or booking.service_description,
-    }
-
-
 def _booking_request_detail(booking):
     attachments = [
         {
@@ -323,16 +310,6 @@ def _booking_request_detail(booking):
             "receipt_url": booking.receipt_screenshot.url if booking.receipt_screenshot else "",
         },
     }
-
-
-def _bookings_for_dashboard(user=None):
-    bookings = [booking.copy() for booking in BOOKINGS]
-    if bookings:
-        bookings[0]["status"] = _simulated_state()["label"]
-    if user and user.is_authenticated:
-        user_bookings = BookingRequest.objects.filter(owner=user).select_related("service").order_by("-created_at")
-        bookings = [_booking_request_card(booking) for booking in user_bookings] + bookings
-    return bookings
 
 
 def _display_name(request):
@@ -474,26 +451,19 @@ def services(request):
 
 @login_required
 def my_bookings(request):
-    bookings = _bookings_for_dashboard(request.user)
-    pending_count = sum(1 for booking in bookings if booking["status"] == "Pending Quotation")
-    completed_count = sum(1 for booking in bookings if booking["status"] == "Completed")
-    active_count = max(len(bookings) - pending_count - completed_count, 0)
-
-    return render(
-        request,
-        "base/my_bookings.html",
+    booking_context = get_my_booking_context(request.user)
+    booking_context.update(
         {
             "active_page": "bookings",
             "display_name": _display_name(request),
             "is_admin": _is_admin(request),
-            "bookings": bookings,
-            "booking_stats": [
-                {"label": "Total", "value": str(len(bookings)), "kind": "total"},
-                {"label": "Pending", "value": str(pending_count), "kind": "pending"},
-                {"label": "Active", "value": str(active_count), "kind": "active"},
-                {"label": "Completed", "value": str(completed_count), "kind": "completed"},
-            ],
-        },
+        }
+    )
+
+    return render(
+        request,
+        "base/my_bookings.html",
+        booking_context,
     )
 
 

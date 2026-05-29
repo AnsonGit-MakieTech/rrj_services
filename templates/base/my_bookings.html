@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
     <script src="{% static 'js/home.js' %}" defer></script>
+    <script src="{% static 'js/my_booking.js' %}" defer></script>
 </head>
 <body>
     {% include "base/includes/header.html" %}
@@ -20,12 +21,12 @@
             <div class="container">
                 <div class="booking-heading">
                     <div>
-                        <h1>My Bookings</h1>
-                        <p>Track your service requests and project progress.</p>
+                        <h1>{{ booking_page_title }}</h1>
+                        <p>{{ booking_page_description }}</p>
                     </div>
-                    <a class="new-booking button button-primary" href="{% url 'add_booking' %}">
+                    <a class="new-booking button button-primary" href="{{ booking_primary_action_url }}">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-                        New Booking
+                        {{ booking_primary_action_label }}
                     </a>
                 </div>
 
@@ -47,15 +48,55 @@
                     {% endfor %}
                 </div>
 
-                <div class="booking-list">
+                <div class="booking-list-controls">
+                    <label class="booking-search">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.35-4.35M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z"/></svg>
+                        <span class="sr-only">Search bookings</span>
+                        <input type="search" placeholder="Search bookings..." data-my-booking-search>
+                    </label>
+                    <div class="booking-status-filter" data-my-booking-status-select>
+                        <span class="sr-only" id="my-booking-status-label">Filter by status</span>
+                        <input type="hidden" value="" data-my-booking-status>
+                        <button
+                            class="booking-status-filter-toggle"
+                            type="button"
+                            aria-expanded="false"
+                            aria-haspopup="listbox"
+                            aria-labelledby="my-booking-status-label my-booking-status-value"
+                            aria-controls="my-booking-status-options"
+                            data-my-booking-status-toggle
+                        >
+                            <span id="my-booking-status-value" data-my-booking-status-label>All Statuses</span>
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
+                        </button>
+                        <div class="booking-status-filter-options" id="my-booking-status-options" role="listbox" aria-labelledby="my-booking-status-label" data-my-booking-status-options hidden>
+                            {% for option in booking_status_options %}
+                            <button class="booking-status-filter-option" type="button" role="option" aria-selected="{% if not option.value %}true{% else %}false{% endif %}" data-my-booking-status-option="{{ option.value }}">
+                                <span>{{ option.label }}</span>
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
+                            </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="booking-list" data-my-booking-list>
                     {% for booking in bookings %}
-                    <a class="booking-card" href="{% url 'view_booking' booking.reference %}" aria-label="View booking {{ booking.reference }}">
+                    <a
+                        class="booking-card"
+                        href="{{ booking.detail_url }}"
+                        aria-label="View booking {{ booking.reference }}"
+                        data-my-booking-card
+                        data-status="{{ booking.status }}"
+                        data-search="{{ booking.search }}"
+                    >
                         <div class="booking-details">
                             <div class="booking-meta">
                                 <span class="booking-reference">{{ booking.reference }}</span>
-                                <span class="booking-status">{{ booking.status }}</span>
+                                <span class="booking-status status-{{ booking.status_kind }}">{{ booking.status }}</span>
                             </div>
                             <h2>{{ booking.service }}</h2>
+                            {% if is_admin %}<p class="booking-customer">{{ booking.customer }}</p>{% endif %}
                             {% if booking.description %}<p>{{ booking.description }}</p>{% endif %}
                         </div>
                         <div class="booking-date">
@@ -65,7 +106,16 @@
                             </span>
                         </div>
                     </a>
+                    {% empty %}
+                    <div class="booking-empty-state">
+                        <h2>{{ booking_empty_title }}</h2>
+                        <p>{{ booking_empty_message }}</p>
+                    </div>
                     {% endfor %}
+                    <div class="booking-empty-state" data-my-booking-empty hidden>
+                        <h2>No bookings match your filters</h2>
+                        <p>Try another search term or status.</p>
+                    </div>
                 </div>
             </div>
         </section>

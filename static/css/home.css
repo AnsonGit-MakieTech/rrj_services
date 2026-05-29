@@ -3170,6 +3170,27 @@ body.modal-open {
     padding: 15px 13px 0;
 }
 
+.messages-thread {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 360px;
+    overflow-y: auto;
+    padding: 0 2px 14px;
+}
+
+.messages-empty {
+    color: #64748b;
+    font-size: 13px;
+    margin: auto 0;
+    text-align: center;
+}
+
+.messages-empty[hidden] {
+    display: none;
+}
+
 .chat-message {
     align-self: flex-end;
     background: var(--color-brand-indigo);
@@ -3177,6 +3198,19 @@ body.modal-open {
     color: var(--color-surface);
     margin-left: 38px;
     padding: 9px 13px;
+}
+
+.chat-message.is-other {
+    align-self: flex-start;
+    background: var(--color-surface);
+    border: 1px solid #dfe5ef;
+    color: var(--color-text-primary);
+    margin-left: 0;
+    margin-right: 38px;
+}
+
+.chat-message.is-own {
+    align-self: flex-end;
 }
 
 .chat-message strong {
@@ -3195,9 +3229,14 @@ body.modal-open {
     font-size: 10px;
 }
 
+.chat-message.is-other time {
+    color: #8792a5;
+}
+
 .message-compose {
     border-top: 1px solid #e3e6ee;
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     margin: auto -13px 0;
     padding: 11px 12px;
@@ -3235,6 +3274,11 @@ body.modal-open {
     width: 38px;
 }
 
+.message-compose button:disabled {
+    cursor: wait;
+    opacity: .72;
+}
+
 .message-compose button:hover {
     background: var(--color-brand-indigo);
 }
@@ -3255,6 +3299,17 @@ body.modal-open {
 .message-compose svg {
     height: 18px;
     width: 18px;
+}
+
+.message-compose-status {
+    color: var(--color-text-secondary);
+    flex: 0 0 100%;
+    font-size: 12px;
+    margin: -2px 0 0;
+}
+
+.message-compose-status[data-type="error"] {
+    color: #c33431;
 }
 
 .admin-quotation-form h2,

@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.urls import reverse
 from unittest.mock import patch
 
-from base.models import BookingRequest, Service
+from base.models import BookingRequest, ChatMessage, Service
 
 
 class AuthenticatedPageTestCase(TestCase):
@@ -664,3 +664,107 @@ class ViewBookingPageTests(AuthenticatedPageTestCase):
         self.assertContains(response, "data-receipt-input")
         self.assertContains(response, 'type="file" name="receipt"')
         self.assertContains(response, "Submit Payment")
+
+
+class BookingMessagingTests(AuthenticatedPageTestCase):
+    def test_customer_can_view_and_send_booking_messages(self):
+        User = get_user_model()
+        admin_user = User.objects.create_user(
+            username="639555000010",
+            password=None,
+            full_name="RRJ Staff",
+            contact_number="639555000010",
+            is_staff=True,
+        )
+        booking = self.create_booking_request(reference="BK-CHAT001")
+        ChatMessage.objects.create(
+            booking_request=booking,
+            sender=admin_user,
+            receiver=self.user,
+            message="We are reviewing your request.",
+        )
+
+        response = self.client.get(reverse("view_booking", args=["BK-CHAT001"]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "We are reviewing your request.")
+        self.assertContains(response, "RRJ Admin")
+        self.assertContains(response, "data-booking-message-form")
+        self.assertContains(response, reverse("booking_messages", args=["BK-CHAT001"]))
+        self.assertContains(response, "js/booking_messaging.")
+
+        response = self.client.post(
+            reverse("booking_messages", args=["BK-CHAT001"]),
+            {"message": "Thank you. Please send the quotation."},
+        )
+
+        self.assertEqual(response.status_code, 201)
+        payload = response.json()
+        self.assertTrue(payload["success"])
+        self.assertTrue(payload["message"]["is_own"])
+
+        chat_message = ChatMessage.objects.latest("id")
+        self.assertEqual(chat_message.booking_request, booking)
+        self.assertEqual(chat_message.sender, self.user)
+        self.assertEqual(chat_message.receiver, admin_user)
+        self.assertEqual(chat_message.message, "Thank you. Please send the quotation.")
+
+    def test_admin_can_view_and_send_booking_messages(self):
+        self.make_user_staff()
+        User = get_user_model()
+        customer = User.objects.create_user(
+            username="639555000011",
+            password=None,
+            full_name="Maria Customer",
+            contact_number="639555000011",
+        )
+        booking = self.create_booking_request(
+            reference="BK-CHAT002",
+            owner=customer,
+            full_name="Maria Customer",
+        )
+        ChatMessage.objects.create(
+            booking_request=booking,
+            sender=customer,
+            receiver=self.user,
+            message="Can you check my uploaded files?",
+        )
+
+        response = self.client.get(reverse("admin_view_booking", args=["BK-CHAT002"]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Can you check my uploaded files?")
+        self.assertContains(response, "Maria Customer")
+        self.assertContains(response, "data-booking-message-form")
+        self.assertContains(response, reverse("booking_messages", args=["BK-CHAT002"]))
+
+        response = self.client.post(
+            reverse("booking_messages", args=["BK-CHAT002"]),
+            {"message": "Files received. We will prepare the quote."},
+        )
+
+        self.assertEqual(response.status_code, 201)
+        chat_message = ChatMessage.objects.latest("id")
+        self.assertEqual(chat_message.booking_request, booking)
+        self.assertEqual(chat_message.sender, self.user)
+        self.assertEqual(chat_message.receiver, customer)
+        self.assertEqual(chat_message.message, "Files received. We will prepare the quote.")
+
+    def test_customer_cannot_view_or_send_messages_for_other_customer_booking(self):
+        User = get_user_model()
+        other_user = User.objects.create_user(
+            username="639555000012",
+            password=None,
+            full_name="Other Customer",
+            contact_number="639555000012",
+        )
+        self.create_booking_request(reference="BK-CHAT003", owner=other_user)
+
+        response = self.client.get(reverse("booking_messages", args=["BK-CHAT003"]))
+        self.assertEqual(response.status_code, 404)
+
+        response = self.client.post(
+            reverse("booking_messages", args=["BK-CHAT003"]),
+            {"message": "Trying to access another booking."},
+        )
+        self.assertEqual(response.status_code, 404)

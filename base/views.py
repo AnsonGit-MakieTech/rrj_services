@@ -1,8 +1,10 @@
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from apis.admin_dashboard import get_admin_booking_detail, get_admin_dashboard_context
 from apis.authentications import api_login, api_register, logout_page
+from apis.booking_messaging import booking_messages, get_booking_messages
 from apis.manage_booking import create_booking
 from apis.manage_service import create_service, delete_service, toggle_service_status, update_service
 from apis.my_booking import get_my_booking_context
@@ -396,6 +398,14 @@ def admin_view_booking(request, reference):
     if not _is_admin(request):
         raise Http404("Admin booking not available")
 
+    booking_request = (
+        BookingRequest.objects.filter(reference_number=reference)
+        .select_related("owner", "service")
+        .first()
+    )
+    if booking_request is None:
+        raise Http404("Booking not found")
+
     booking = get_admin_booking_detail(reference)
     if booking is None:
         raise Http404("Booking not found")
@@ -413,6 +423,8 @@ def admin_view_booking(request, reference):
             "booking": booking,
             "state": state,
             "progress_steps": _progress_steps(state),
+            "chat_messages": get_booking_messages(booking_request, request.user),
+            "messages_endpoint": reverse("booking_messages", args=[reference]),
         },
     )
 
@@ -514,6 +526,8 @@ def view_booking(request, reference):
                 "booking": booking,
                 "state": state,
                 "progress_steps": _progress_steps(state),
+                "chat_messages": get_booking_messages(booking_request, request.user),
+                "messages_endpoint": reverse("booking_messages", args=[reference]),
             },
         )
 
@@ -534,5 +548,7 @@ def view_booking(request, reference):
             "booking": booking,
             "state": state,
             "progress_steps": _progress_steps(state),
+            "chat_messages": [],
+            "messages_endpoint": reverse("booking_messages", args=[reference]),
         },
     )

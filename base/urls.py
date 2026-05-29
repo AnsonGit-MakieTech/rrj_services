@@ -10,6 +10,7 @@ urlpatterns = [
     path("api/login/", views.api_login, name="api_login"),
     path("api/register/", views.api_register, name="api_register"),
     path("api/bookings/create/", views.create_booking, name="create_booking"),
+    path("api/bookings/<str:reference>/messages/", views.booking_messages, name="booking_messages"),
     path("api/services/create/", views.create_service, name="create_service"),
     path("api/services/update/", views.update_service, name="update_service"),
     path("api/services/<int:service_id>/toggle/", views.toggle_service_status, name="toggle_service_status"),

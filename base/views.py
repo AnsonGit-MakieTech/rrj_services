@@ -205,3 +205,7 @@ def view_booking(request, reference):
         )
 
     raise Http404("Booking not found")
+
+
+def page_not_found(request, exception):
+    return render(request, "404.html", status=404)

@@ -2,7 +2,7 @@ import shutil
 import tempfile
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from base.models import BookingRequest, ChatMessage, Service, SystemSettings
@@ -124,6 +124,29 @@ class AuthenticationPageTests(TestCase):
         self.assertNotContains(response, 'type="password"')
         self.assertContains(response, reverse("login"))
         self.assertContains(response, "assets/rrj-logo")
+
+
+class ErrorPageTests(AuthenticatedPageTestCase):
+    @override_settings(DEBUG=False, ALLOWED_HOSTS=["testserver"])
+    def test_unknown_url_renders_custom_404_for_authenticated_user(self):
+        response = self.client.get("/missing-page/")
+
+        self.assertEqual(response.status_code, 404)
+        self.assertContains(response, "Page not found", status_code=404)
+        self.assertContains(response, "RRJ's Maintenance Services", status_code=404)
+        self.assertContains(response, reverse("home"), status_code=404)
+        self.assertContains(response, reverse("my_bookings"), status_code=404)
+
+    @override_settings(DEBUG=False, ALLOWED_HOSTS=["testserver"])
+    def test_unknown_url_renders_custom_404_for_guest(self):
+        self.client.logout()
+
+        response = self.client.get("/missing-page/")
+
+        self.assertEqual(response.status_code, 404)
+        self.assertContains(response, "Page not found", status_code=404)
+        self.assertContains(response, reverse("login"), status_code=404)
+        self.assertContains(response, reverse("register"), status_code=404)
 
 
 class AuthenticationApiTests(TestCase):

@@ -1,0 +1,38 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Page Not Found | RRJ's Maintenance Services</title>
+    <meta name="description" content="The page you are looking for does not exist.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+<body class="error-page-body">
+    <main class="error-page">
+        <section class="error-card" aria-labelledby="error-title">
+            <a class="error-brand" href="{% if request.user.is_authenticated %}{% url 'home' %}{% else %}{% url 'login' %}{% endif %}">
+                <img src="{% static 'assets/rrj-logo-icon.png' %}" alt="">
+                <span>RRJ's Maintenance Services</span>
+            </a>
+            <p class="error-code">404</p>
+            <h1 id="error-title">Page not found</h1>
+            <p class="error-description">
+                The page may have been moved, deleted, or the link may be incorrect.
+            </p>
+            <div class="error-actions">
+                {% if request.user.is_authenticated %}
+                <a class="button button-primary" href="{% url 'home' %}">Go Home</a>
+                <a class="button button-secondary" href="{% url 'my_bookings' %}">My Bookings</a>
+                {% else %}
+                <a class="button button-primary" href="{% url 'login' %}">Login</a>
+                <a class="button button-secondary" href="{% url 'register' %}">Create Account</a>
+                {% endif %}
+            </div>
+        </section>
+    </main>
+</body>
+</html>

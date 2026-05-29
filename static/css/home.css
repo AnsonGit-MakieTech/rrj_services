@@ -2936,7 +2936,8 @@ body.modal-open {
 .decision-button:disabled,
 .admin-primary-action:disabled,
 .submit-payment:disabled,
-.admin-payment-actions button:disabled {
+.admin-payment-actions button:disabled,
+.admin-status-actions button:disabled {
     cursor: wait;
     opacity: .72;
 }
@@ -3400,6 +3401,11 @@ body.modal-open {
 }
 
 .admin-payment-actions .transaction-status {
+    flex: 0 0 100%;
+    margin-top: 0;
+}
+
+.admin-status-actions .transaction-status {
     flex: 0 0 100%;
     margin-top: 0;
 }

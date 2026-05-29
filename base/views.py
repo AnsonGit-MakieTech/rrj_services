@@ -9,6 +9,7 @@ from apis.booking_transactions import (
     decide_booking_quotation,
     submit_booking_payment,
     submit_booking_quotation,
+    update_booking_status,
     verify_booking_payment,
 )
 from apis.manage_booking import create_booking
@@ -206,7 +207,7 @@ ADMIN_BOOKING_STATES = {
         "show_quotation": True,
         "show_payment_verification": False,
         "show_status_actions": True,
-        "status_actions": ["Scheduled", "In Progress", "Completed"],
+        "status_actions": [{"label": "Scheduled", "value": "scheduled"}],
     },
     "scheduled": {
         "label": "Scheduled",
@@ -217,7 +218,10 @@ ADMIN_BOOKING_STATES = {
         "show_quotation": True,
         "show_payment_verification": False,
         "show_status_actions": True,
-        "status_actions": ["In Progress", "Completed"],
+        "status_actions": [
+            {"label": "In Progress", "value": "in_progress"},
+            {"label": "Completed", "value": "completed"},
+        ],
     },
     "in_progress": {
         "label": "In Progress",
@@ -228,7 +232,10 @@ ADMIN_BOOKING_STATES = {
         "show_quotation": True,
         "show_payment_verification": False,
         "show_status_actions": True,
-        "status_actions": ["Completed"],
+        "status_actions": [
+            {"label": "Scheduled", "value": "scheduled"},
+            {"label": "Completed", "value": "completed"},
+        ],
     },
     "completed": {
         "label": "Completed",
@@ -433,6 +440,7 @@ def admin_view_booking(request, reference):
             "messages_endpoint": reverse("booking_messages", args=[reference]),
             "quotation_submit_endpoint": reverse("submit_booking_quotation", args=[reference]),
             "payment_verify_endpoint": reverse("verify_booking_payment", args=[reference]),
+            "status_update_endpoint": reverse("update_booking_status", args=[reference]),
         },
     )
 

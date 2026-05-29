@@ -15,6 +15,7 @@ urlpatterns = [
     path("api/bookings/<str:reference>/quotation/decision/", views.decide_booking_quotation, name="decide_booking_quotation"),
     path("api/bookings/<str:reference>/payment/", views.submit_booking_payment, name="submit_booking_payment"),
     path("api/bookings/<str:reference>/payment/verify/", views.verify_booking_payment, name="verify_booking_payment"),
+    path("api/bookings/<str:reference>/status/", views.update_booking_status, name="update_booking_status"),
     path("api/services/create/", views.create_service, name="create_service"),
     path("api/services/update/", views.update_service, name="update_service"),
     path("api/services/<int:service_id>/toggle/", views.toggle_service_status, name="toggle_service_status"),

@@ -265,6 +265,10 @@ class AdminViewBookingPageTests(AuthenticatedPageTestCase):
         self.assertContains(response, "Scheduled")
         self.assertContains(response, "Messages")
         self.assertContains(response, "Progress")
+        self.assertContains(response, reverse("update_booking_status", args=["BK-ADMIN001"]))
+        self.assertContains(response, 'name="progress" value="scheduled"')
+        self.assertNotContains(response, 'name="progress" value="in_progress"')
+        self.assertNotContains(response, 'name="progress" value="completed"')
         self.assertContains(response, f'class="active" href="{reverse("admin_dashboard")}"')
 
     def test_pending_quotation_simulation_displays_quotation_form(self):
@@ -306,19 +310,22 @@ class AdminViewBookingPageTests(AuthenticatedPageTestCase):
         response = self.client.get(reverse("admin_view_booking", args=["BK-ADMIN004"]))
 
         self.assertContains(response, "Update Status")
-        self.assertContains(response, "In Progress")
-        self.assertContains(response, "Completed")
+        self.assertContains(response, 'name="progress" value="in_progress"')
+        self.assertContains(response, 'name="progress" value="completed"')
         self.assertNotContains(response, '<button type="button">Scheduled</button>')
+        self.assertNotContains(response, 'name="progress" value="scheduled"')
 
-    def test_in_progress_simulation_only_displays_completed_action(self):
+    def test_in_progress_simulation_displays_reschedule_and_completed_actions(self):
         self.make_user_staff()
         self.create_booking_request(reference="BK-ADMIN005", progress="in_progress")
         response = self.client.get(reverse("admin_view_booking", args=["BK-ADMIN005"]))
 
         self.assertContains(response, "Update Status")
-        self.assertContains(response, '<button type="button">Completed</button>')
+        self.assertContains(response, 'name="progress" value="scheduled"')
+        self.assertContains(response, 'name="progress" value="completed"')
         self.assertNotContains(response, '<button type="button">Scheduled</button>')
         self.assertNotContains(response, '<button type="button">In Progress</button>')
+        self.assertNotContains(response, 'name="progress" value="in_progress"')
 
     def test_existing_completed_dashboard_booking_keeps_its_status(self):
         self.make_user_staff()
@@ -1020,3 +1027,84 @@ class BookingTransactionTests(AuthenticatedPageTestCase):
         self.assertEqual(message.sender, self.user)
         self.assertEqual(message.receiver, booking.owner)
         self.assertEqual(message.message, "Payment proof rejected. Please upload a new receipt for verification.")
+
+    def test_admin_can_update_operational_status_and_customer_sees_it(self):
+        self.make_user_staff()
+        User = get_user_model()
+        customer = User.objects.create_user(
+            username="639555000018",
+            password=None,
+            full_name="Maria Customer",
+            contact_number="639555000018",
+        )
+        booking = self.create_booking_request(
+            reference="BK-STATUS001",
+            owner=customer,
+            progress="booking_confirmed",
+        )
+
+        response = self.client.post(
+            reverse("update_booking_status", args=["BK-STATUS001"]),
+            {"progress": "scheduled"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["success"])
+        booking.refresh_from_db()
+        self.assertEqual(booking.progress, "scheduled")
+
+        message = ChatMessage.objects.latest("id")
+        self.assertEqual(message.booking_request, booking)
+        self.assertEqual(message.sender, self.user)
+        self.assertEqual(message.receiver, customer)
+        self.assertEqual(message.message, "Booking scheduled. RRJ Admin updated the project status to Scheduled.")
+
+        self.client.force_login(customer)
+        response = self.client.get(reverse("view_booking", args=["BK-STATUS001"]))
+        self.assertContains(response, "Scheduled")
+        self.assertContains(response, "phase-current")
+
+    def test_admin_cannot_use_invalid_status_transition(self):
+        self.make_user_staff()
+        booking = self.create_booking_request(
+            reference="BK-STATUS002",
+            progress="pending_quotation",
+        )
+
+        response = self.client.post(
+            reverse("update_booking_status", args=["BK-STATUS002"]),
+            {"progress": "completed"},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        booking.refresh_from_db()
+        self.assertEqual(booking.progress, "pending_quotation")
+
+    def test_admin_can_move_in_progress_back_to_scheduled_for_reschedule(self):
+        self.make_user_staff()
+        booking = self.create_booking_request(
+            reference="BK-STATUS003",
+            progress="in_progress",
+        )
+
+        response = self.client.post(
+            reverse("update_booking_status", args=["BK-STATUS003"]),
+            {"progress": "scheduled"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        booking.refresh_from_db()
+        self.assertEqual(booking.progress, "scheduled")
+
+    def test_customer_cannot_update_booking_status(self):
+        self.create_booking_request(
+            reference="BK-STATUS004",
+            progress="booking_confirmed",
+        )
+
+        response = self.client.post(
+            reverse("update_booking_status", args=["BK-STATUS004"]),
+            {"progress": "scheduled"},
+        )
+
+        self.assertEqual(response.status_code, 404)

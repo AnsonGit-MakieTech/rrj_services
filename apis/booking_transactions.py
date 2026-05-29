@@ -13,6 +13,16 @@ from base.models import BookingRequest, ChatMessage
 
 MAX_RECEIPT_SIZE = 10 * 1024 * 1024
 ALLOWED_RECEIPT_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
+STATUS_TRANSITIONS = {
+    "booking_confirmed": {"scheduled"},
+    "scheduled": {"in_progress", "completed"},
+    "in_progress": {"scheduled", "completed"},
+}
+STATUS_UPDATE_MESSAGES = {
+    "scheduled": "Booking scheduled. RRJ Admin updated the project status to Scheduled.",
+    "in_progress": "Work is now in progress. RRJ Admin updated the project status to In Progress.",
+    "completed": "Project marked as completed. RRJ Admin updated the booking status to Completed.",
+}
 
 
 @login_required
@@ -254,6 +264,57 @@ def verify_booking_payment(request, reference):
             "success": True,
             "message": message,
             "status": status,
+            "redirect_url": reverse("admin_view_booking", args=[reference]),
+        }
+    )
+
+
+@login_required
+@require_POST
+def update_booking_status(request, reference):
+    if not request.user.is_staff:
+        raise Http404("Booking status update not available")
+
+    target_progress = (request.POST.get("progress") or "").strip()
+    progress_labels = dict(BookingRequest._meta.get_field("progress").choices)
+    if target_progress not in progress_labels:
+        return JsonResponse({"success": False, "message": "Please select a valid booking status."}, status=400)
+
+    with transaction.atomic():
+        booking = (
+            BookingRequest.objects.select_for_update()
+            .select_related("owner", "service")
+            .filter(reference_number=reference)
+            .first()
+        )
+        if booking is None:
+            raise Http404("Booking not found")
+
+        allowed_targets = STATUS_TRANSITIONS.get(booking.progress, set())
+        if target_progress not in allowed_targets:
+            return JsonResponse(
+                {"success": False, "message": "That status update is not allowed for the current booking state."},
+                status=400,
+            )
+
+        booking.progress = target_progress
+        booking.save(update_fields=["progress", "updated_at"])
+        message = STATUS_UPDATE_MESSAGES.get(
+            target_progress,
+            f"Booking status updated to {progress_labels[target_progress]}.",
+        )
+        ChatMessage.objects.create(
+            booking_request=booking,
+            sender=request.user,
+            receiver=booking.owner,
+            message=message,
+        )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "message": message,
+            "status": progress_labels[target_progress],
             "redirect_url": reverse("admin_view_booking", args=[reference]),
         }
     )

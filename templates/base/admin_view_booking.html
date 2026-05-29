@@ -128,11 +128,13 @@
                     {% if state.show_status_actions %}
                     <section class="detail-panel admin-status-update" aria-label="Update booking status">
                         <h2>Update Status</h2>
-                        <div class="admin-status-actions">
+                        <form class="admin-status-actions" action="{{ status_update_endpoint }}" method="post" data-booking-transaction-form>
+                            {% csrf_token %}
                             {% for action in state.status_actions %}
-                            <button type="button">{{ action }}</button>
+                            <button type="submit" name="progress" value="{{ action.value }}" data-booking-transaction-submit>{{ action.label }}</button>
                             {% endfor %}
-                        </div>
+                            <p class="transaction-status" aria-live="polite" data-booking-transaction-status hidden></p>
+                        </form>
                     </section>
                     {% endif %}
 

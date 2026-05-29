@@ -5,6 +5,12 @@ from django.urls import reverse
 from apis.admin_dashboard import get_admin_booking_detail, get_admin_dashboard_context
 from apis.authentications import api_login, api_register, logout_page
 from apis.booking_messaging import booking_messages, get_booking_messages
+from apis.booking_transactions import (
+    decide_booking_quotation,
+    submit_booking_payment,
+    submit_booking_quotation,
+    verify_booking_payment,
+)
 from apis.manage_booking import create_booking
 from apis.manage_service import create_service, delete_service, toggle_service_status, update_service
 from apis.my_booking import get_my_booking_context
@@ -308,7 +314,7 @@ def _booking_request_detail(booking):
         "payment": {
             "amount": f"PHP {booking.amount_paid:,.0f}",
             "method": booking.get_payment_method_display(),
-            "reference": booking.reference_number or "-",
+            "reference": booking.payment_reference_number or "-",
             "receipt_url": booking.receipt_screenshot.url if booking.receipt_screenshot else "",
         },
     }
@@ -425,6 +431,8 @@ def admin_view_booking(request, reference):
             "progress_steps": _progress_steps(state),
             "chat_messages": get_booking_messages(booking_request, request.user),
             "messages_endpoint": reverse("booking_messages", args=[reference]),
+            "quotation_submit_endpoint": reverse("submit_booking_quotation", args=[reference]),
+            "payment_verify_endpoint": reverse("verify_booking_payment", args=[reference]),
         },
     )
 
@@ -528,6 +536,8 @@ def view_booking(request, reference):
                 "progress_steps": _progress_steps(state),
                 "chat_messages": get_booking_messages(booking_request, request.user),
                 "messages_endpoint": reverse("booking_messages", args=[reference]),
+                "quotation_decision_endpoint": reverse("decide_booking_quotation", args=[reference]),
+                "payment_submit_endpoint": reverse("submit_booking_payment", args=[reference]),
             },
         )
 
@@ -550,5 +560,7 @@ def view_booking(request, reference):
             "progress_steps": _progress_steps(state),
             "chat_messages": [],
             "messages_endpoint": reverse("booking_messages", args=[reference]),
+            "quotation_decision_endpoint": reverse("decide_booking_quotation", args=[reference]),
+            "payment_submit_endpoint": reverse("submit_booking_payment", args=[reference]),
         },
     )

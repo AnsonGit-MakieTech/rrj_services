@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
     <script src="{% static 'js/home.js' %}" defer></script>
     <script src="{% static 'js/booking_messaging.js' %}" defer></script>
+    <script src="{% static 'js/booking_transactions.js' %}" defer></script>
 </head>
 <body class="view-booking-page">
     {% include "base/includes/header.html" %}
@@ -76,16 +77,18 @@
                         </dl>
                         <p class="quotation-note">{{ booking.quotation.notes }}</p>
                         {% if state.allow_decision %}
-                        <div class="quotation-actions">
-                            <button class="decision-button decision-accept" type="button">
+                        <form class="quotation-actions" action="{{ quotation_decision_endpoint }}" method="post" data-booking-transaction-form>
+                            {% csrf_token %}
+                            <button class="decision-button decision-accept" type="submit" name="decision" value="accept" data-booking-transaction-submit>
                                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 12 3 3 7-7"/><circle cx="12" cy="12" r="9"/></svg>
                                 Accept
                             </button>
-                            <button class="decision-button decision-reject" type="button">
+                            <button class="decision-button decision-reject" type="submit" name="decision" value="reject" data-booking-transaction-submit>
                                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 9 6 6m0-6-6 6"/><circle cx="12" cy="12" r="9"/></svg>
                                 Reject
                             </button>
-                        </div>
+                            <p class="transaction-status" aria-live="polite" data-booking-transaction-status hidden></p>
+                        </form>
                         {% endif %}
                     </article>
                     {% endif %}
@@ -93,10 +96,11 @@
                     {% if state.show_payment %}
                     <section class="detail-panel payment-panel" aria-label="Upload payment proof">
                         <h2>Upload Payment Proof</h2>
-                        <form class="payment-form">
+                        <form class="payment-form" action="{{ payment_submit_endpoint }}" method="post" enctype="multipart/form-data" data-booking-transaction-form>
+                            {% csrf_token %}
                             <div class="payment-grid">
                                 <label class="payment-field">Amount Paid *
-                                    <input type="text" name="amount_paid" placeholder="Enter amount">
+                                    <input type="number" name="amount_paid" inputmode="decimal" min="0" step="0.01" placeholder="Enter amount" required>
                                 </label>
                                 <div class="payment-field payment-select" data-payment-select>
                                     <span class="payment-field-label" id="payment-method-label">Payment Method *</span>
@@ -114,32 +118,33 @@
                                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
                                     </button>
                                     <div class="payment-select-options" id="payment-method-options" role="listbox" aria-labelledby="payment-method-label" data-payment-options hidden>
-                                        <button class="payment-option" type="button" role="option" aria-selected="false" data-payment-option="GCash">
+                                        <button class="payment-option" type="button" role="option" aria-selected="false" data-payment-option="g-cash">
                                             <span>GCash</span>
                                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
                                         </button>
-                                        <button class="payment-option" type="button" role="option" aria-selected="false" data-payment-option="Bank Transfer">
+                                        <button class="payment-option" type="button" role="option" aria-selected="false" data-payment-option="bank-transfer">
                                             <span>Bank Transfer</span>
                                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
                                         </button>
-                                        <button class="payment-option" type="button" role="option" aria-selected="false" data-payment-option="Maya">
+                                        <button class="payment-option" type="button" role="option" aria-selected="false" data-payment-option="maya">
                                             <span>Maya</span>
                                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
                                         </button>
                                     </div>
                                 </div>
                                 <label class="payment-field detail-full">Reference Number
-                                    <input type="text" name="reference_number" placeholder="Enter transaction reference number">
+                                    <input type="text" name="payment_reference_number" placeholder="Enter transaction reference number">
                                 </label>
                                 <label class="payment-field detail-full">
                                     <span>Receipt Screenshot *</span>
-                                    <input class="receipt-input" type="file" name="receipt" accept=".jpg,.jpeg,.png" data-receipt-input>
+                                    <input class="receipt-input" type="file" name="receipt" accept=".jpg,.jpeg,.png,.webp" data-receipt-input required>
                                 </label>
                             </div>
-                            <button class="submit-payment" type="button">
+                            <button class="submit-payment" type="submit" data-booking-transaction-submit>
                                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0-4 4m4-4 4 4M5 14v5h14v-5"/></svg>
                                 Submit Payment
                             </button>
+                            <p class="transaction-status" aria-live="polite" data-booking-transaction-status hidden></p>
                         </form>
                     </section>
                     {% endif %}

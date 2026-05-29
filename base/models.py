@@ -127,7 +127,7 @@ class BookingRequest(models.Model):
         ),
         default='g-cash'
     )
-    reference_number = models.CharField(max_length=255 , blank=True, null=True)
+    payment_reference_number = models.CharField(max_length=255 , blank=True, null=True)
     receipt_screenshot = models.ImageField(upload_to='receipts/', blank=True, null=True)
     approved_payment = models.BooleanField( default=False)
 

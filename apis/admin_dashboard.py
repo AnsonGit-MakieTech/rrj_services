@@ -78,12 +78,16 @@ def get_admin_booking_detail(reference):
             "materials": _format_money(booking.material_cost),
             "labor": _format_money(booking.labor_cost),
             "total": _format_money(booking.total_cost),
+            "materials_value": _format_input_money(booking.material_cost),
+            "labor_value": _format_input_money(booking.labor_cost),
+            "total_value": _format_input_money(booking.total_cost),
             "notes": booking.transaction_notes or "Quotation details will appear here.",
+            "notes_value": booking.transaction_notes or "",
         },
         "payment": {
             "amount": _format_money(booking.amount_paid),
             "method": booking.get_payment_method_display(),
-            "reference": booking.reference_number or "-",
+            "reference": booking.payment_reference_number or "-",
             "receipt_url": booking.receipt_screenshot.url if booking.receipt_screenshot else "",
         },
     }
@@ -169,6 +173,13 @@ def _count_progress(bookings, progress_values):
 
 def _format_money(value):
     return f"PHP {float(value or 0):,.0f}"
+
+
+def _format_input_money(value):
+    amount = float(value or 0)
+    if amount == 0:
+        return ""
+    return f"{amount:.2f}".rstrip("0").rstrip(".")
 
 
 def _format_datetime(value):

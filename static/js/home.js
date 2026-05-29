@@ -104,7 +104,7 @@
         function selectPaymentMethod(option) {
             const value = option.dataset.paymentOption;
             selectValue.value = value;
-            selectLabel.textContent = value;
+            selectLabel.textContent = option.querySelector("span").textContent;
             selectLabel.classList.remove("payment-select-placeholder");
             selectLabel.classList.add("payment-select-value");
             options.forEach(function (currentOption) {

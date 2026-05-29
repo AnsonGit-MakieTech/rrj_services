@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
     <script src="{% static 'js/home.js' %}" defer></script>
     <script src="{% static 'js/booking_messaging.js' %}" defer></script>
+    <script src="{% static 'js/booking_transactions.js' %}" defer></script>
 </head>
 <body class="view-booking-page admin-booking-detail-page">
     {% include "base/includes/header.html" %}
@@ -64,22 +65,24 @@
                     {% if state.show_send_quotation %}
                     <section class="detail-panel admin-quotation-form" aria-label="Send quotation">
                         <h2>Send Quotation</h2>
-                        <form>
+                        <form action="{{ quotation_submit_endpoint }}" method="post" data-booking-transaction-form>
+                            {% csrf_token %}
                             <div class="admin-quotation-fields">
                                 <label>Materials Cost
-                                    <input type="number" name="materials_cost" inputmode="decimal" min="0" step="0.01">
+                                    <input type="number" name="materials_cost" inputmode="decimal" min="0" step="0.01" value="{{ booking.quotation.materials_value }}">
                                 </label>
                                 <label>Labor Cost
-                                    <input type="number" name="labor_cost" inputmode="decimal" min="0" step="0.01">
+                                    <input type="number" name="labor_cost" inputmode="decimal" min="0" step="0.01" value="{{ booking.quotation.labor_value }}">
                                 </label>
                                 <label class="detail-full">Total Amount *
-                                    <input type="number" name="total_amount" inputmode="decimal" min="0" step="0.01">
+                                    <input type="number" name="total_amount" inputmode="decimal" min="0" step="0.01" value="{{ booking.quotation.total_value }}" required>
                                 </label>
                                 <label class="detail-full">Notes
-                                    <textarea rows="3"></textarea>
+                                    <textarea name="notes" rows="3">{{ booking.quotation.notes_value }}</textarea>
                                 </label>
                             </div>
-                            <button class="admin-primary-action" type="button">Send Quotation</button>
+                            <button class="admin-primary-action" type="submit" data-booking-transaction-submit>Send Quotation</button>
+                            <p class="transaction-status" aria-live="polite" data-booking-transaction-status hidden></p>
                         </form>
                     </section>
                     {% endif %}
@@ -107,16 +110,18 @@
                         {% if booking.payment.receipt_url %}
                         <img class="admin-payment-receipt" src="{{ booking.payment.receipt_url }}" alt="Customer payment receipt" loading="lazy">
                         {% endif %}
-                        <div class="admin-payment-actions">
-                            <button class="admin-approve" type="button">
+                        <form class="admin-payment-actions" action="{{ payment_verify_endpoint }}" method="post" data-booking-transaction-form>
+                            {% csrf_token %}
+                            <button class="admin-approve" type="submit" name="decision" value="approve" data-booking-transaction-submit>
                                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 12 3 3 7-7"/><circle cx="12" cy="12" r="9"/></svg>
                                 Approve Payment
                             </button>
-                            <button class="admin-reject" type="button">
+                            <button class="admin-reject" type="submit" name="decision" value="reject" data-booking-transaction-submit>
                                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 9 6 6m0-6-6 6"/><circle cx="12" cy="12" r="9"/></svg>
                                 Reject Payment
                             </button>
-                        </div>
+                            <p class="transaction-status" aria-live="polite" data-booking-transaction-status hidden></p>
+                        </form>
                     </section>
                     {% endif %}
 

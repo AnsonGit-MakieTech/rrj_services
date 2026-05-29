@@ -275,6 +275,9 @@ class AdminViewBookingPageTests(AuthenticatedPageTestCase):
         self.assertContains(response, "Pending Quotation")
         self.assertContains(response, "Send Quotation")
         self.assertContains(response, "Materials Cost")
+        self.assertContains(response, reverse("submit_booking_quotation", args=["BK-ADMIN002"]))
+        self.assertContains(response, "data-booking-transaction-form")
+        self.assertContains(response, "js/booking_transactions.")
         self.assertContains(response, 'type="number" name="materials_cost"')
         self.assertContains(response, 'type="number" name="labor_cost"')
         self.assertContains(response, 'type="number" name="total_amount"')
@@ -294,6 +297,8 @@ class AdminViewBookingPageTests(AuthenticatedPageTestCase):
         self.assertContains(response, "Approve Payment")
         self.assertContains(response, "Reject Payment")
         self.assertContains(response, "PHP 1,200")
+        self.assertContains(response, reverse("verify_booking_payment", args=["BK-ADMIN003"]))
+        self.assertContains(response, "data-booking-transaction-form")
 
     def test_scheduled_simulation_only_displays_remaining_status_actions(self):
         self.make_user_staff()
@@ -653,6 +658,9 @@ class ViewBookingPageTests(AuthenticatedPageTestCase):
         self.assertContains(response, "Quotation Sent")
         self.assertContains(response, "Accept")
         self.assertContains(response, "Reject")
+        self.assertContains(response, reverse("decide_booking_quotation", args=["BK-MPL5LPV3"]))
+        self.assertContains(response, "data-booking-transaction-form")
+        self.assertContains(response, "js/booking_transactions.")
 
     def test_waiting_payment_simulation_displays_payment_form(self):
         with patch("base.views.SIMULATED_VIEW_BOOKING_STATUS", "waiting_for_payment"):
@@ -663,6 +671,9 @@ class ViewBookingPageTests(AuthenticatedPageTestCase):
         self.assertContains(response, "data-payment-select")
         self.assertContains(response, "data-receipt-input")
         self.assertContains(response, 'type="file" name="receipt"')
+        self.assertContains(response, 'name="payment_reference_number"')
+        self.assertContains(response, reverse("submit_booking_payment", args=["BK-MPL5LPV3"]))
+        self.assertContains(response, "data-booking-transaction-form")
         self.assertContains(response, "Submit Payment")
 
 
@@ -768,3 +779,244 @@ class BookingMessagingTests(AuthenticatedPageTestCase):
             {"message": "Trying to access another booking."},
         )
         self.assertEqual(response.status_code, 404)
+
+
+class BookingTransactionTests(AuthenticatedPageTestCase):
+    def setUp(self):
+        super().setUp()
+        self.media_root = tempfile.mkdtemp()
+        self.media_override = self.settings(MEDIA_ROOT=self.media_root)
+        self.media_override.enable()
+        self.addCleanup(self.media_override.disable)
+        self.addCleanup(shutil.rmtree, self.media_root, ignore_errors=True)
+
+    def test_admin_can_submit_quotation_and_notify_customer(self):
+        self.make_user_staff()
+        User = get_user_model()
+        customer = User.objects.create_user(
+            username="639555000013",
+            password=None,
+            full_name="Maria Customer",
+            contact_number="639555000013",
+        )
+        booking = self.create_booking_request(
+            reference="BK-QUOTE001",
+            owner=customer,
+            service_name="Kitchen Renovation",
+            progress="pending_quotation",
+            material_cost=0,
+            labor_cost=0,
+            total_cost=0,
+        )
+
+        response = self.client.post(
+            reverse("submit_booking_quotation", args=["BK-QUOTE001"]),
+            {
+                "materials_cost": "2500",
+                "labor_cost": "6500",
+                "total_amount": "9000",
+                "notes": "Includes materials and labor.",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["success"])
+        booking.refresh_from_db()
+        self.assertEqual(booking.progress, "quotation_sent")
+        self.assertEqual(booking.material_cost, 2500)
+        self.assertEqual(booking.labor_cost, 6500)
+        self.assertEqual(booking.total_cost, 9000)
+        self.assertEqual(booking.transaction_notes, "Includes materials and labor.")
+
+        message = ChatMessage.objects.latest("id")
+        self.assertEqual(message.booking_request, booking)
+        self.assertEqual(message.sender, self.user)
+        self.assertEqual(message.receiver, customer)
+        self.assertIn("Quotation sent", message.message)
+        self.assertIn("PHP 9,000", message.message)
+
+    def test_customer_can_accept_quotation_and_move_to_payment(self):
+        User = get_user_model()
+        admin_user = User.objects.create_user(
+            username="639555000014",
+            password=None,
+            full_name="RRJ Staff",
+            contact_number="639555000014",
+            is_staff=True,
+        )
+        booking = self.create_booking_request(
+            reference="BK-QUOTE002",
+            progress="quotation_sent",
+            material_cost=1500,
+            labor_cost=2500,
+            total_cost=4000,
+        )
+
+        response = self.client.post(
+            reverse("decide_booking_quotation", args=["BK-QUOTE002"]),
+            {"decision": "accept"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["success"])
+        booking.refresh_from_db()
+        self.assertEqual(booking.progress, "waiting_for_payment")
+
+        message = ChatMessage.objects.latest("id")
+        self.assertEqual(message.booking_request, booking)
+        self.assertEqual(message.sender, self.user)
+        self.assertEqual(message.receiver, admin_user)
+        self.assertEqual(message.message, "Quotation accepted. Waiting for payment proof.")
+
+    def test_customer_can_reject_quotation_for_revision(self):
+        User = get_user_model()
+        admin_user = User.objects.create_user(
+            username="639555000015",
+            password=None,
+            full_name="RRJ Staff",
+            contact_number="639555000015",
+            is_staff=True,
+        )
+        booking = self.create_booking_request(
+            reference="BK-QUOTE003",
+            progress="quotation_sent",
+            total_cost=4000,
+        )
+
+        response = self.client.post(
+            reverse("decide_booking_quotation", args=["BK-QUOTE003"]),
+            {"decision": "reject"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["success"])
+        booking.refresh_from_db()
+        self.assertEqual(booking.progress, "pending_quotation")
+
+        message = ChatMessage.objects.latest("id")
+        self.assertEqual(message.booking_request, booking)
+        self.assertEqual(message.sender, self.user)
+        self.assertEqual(message.receiver, admin_user)
+        self.assertEqual(message.message, "Quotation rejected. Please review and send an updated quotation.")
+
+    def test_customer_cannot_decide_other_customer_quotation(self):
+        User = get_user_model()
+        other_user = User.objects.create_user(
+            username="639555000016",
+            password=None,
+            full_name="Other Customer",
+            contact_number="639555000016",
+        )
+        self.create_booking_request(
+            reference="BK-QUOTE004",
+            owner=other_user,
+            progress="quotation_sent",
+            total_cost=4000,
+        )
+
+        response = self.client.post(
+            reverse("decide_booking_quotation", args=["BK-QUOTE004"]),
+            {"decision": "accept"},
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_customer_can_submit_payment_proof_for_admin_verification(self):
+        User = get_user_model()
+        admin_user = User.objects.create_user(
+            username="639555000017",
+            password=None,
+            full_name="RRJ Staff",
+            contact_number="639555000017",
+            is_staff=True,
+        )
+        booking = self.create_booking_request(
+            reference="BK-PAY001",
+            progress="waiting_for_payment",
+            total_cost=4000,
+        )
+        receipt = SimpleUploadedFile(
+            "receipt.png",
+            b"receipt-image",
+            content_type="image/png",
+        )
+
+        response = self.client.post(
+            reverse("submit_booking_payment", args=["BK-PAY001"]),
+            {
+                "amount_paid": "4000",
+                "payment_method": "g-cash",
+                "payment_reference_number": "GCASH-123",
+                "receipt": receipt,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["success"])
+        booking.refresh_from_db()
+        self.assertEqual(booking.progress, "payment_verification")
+        self.assertEqual(booking.amount_paid, 4000)
+        self.assertEqual(booking.payment_method, "g-cash")
+        self.assertEqual(booking.payment_reference_number, "GCASH-123")
+        self.assertFalse(booking.approved_payment)
+        self.assertTrue(booking.receipt_screenshot.name.startswith("receipts/"))
+
+        message = ChatMessage.objects.latest("id")
+        self.assertEqual(message.booking_request, booking)
+        self.assertEqual(message.sender, self.user)
+        self.assertEqual(message.receiver, admin_user)
+        self.assertIn("Payment proof submitted", message.message)
+
+    def test_admin_can_approve_payment_and_confirm_booking(self):
+        self.make_user_staff()
+        booking = self.create_booking_request(
+            reference="BK-PAY002",
+            progress="payment_verification",
+            amount_paid=4000,
+            total_cost=4000,
+        )
+
+        response = self.client.post(
+            reverse("verify_booking_payment", args=["BK-PAY002"]),
+            {"decision": "approve"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["success"])
+        booking.refresh_from_db()
+        self.assertEqual(booking.progress, "booking_confirmed")
+        self.assertTrue(booking.approved_payment)
+
+        message = ChatMessage.objects.latest("id")
+        self.assertEqual(message.booking_request, booking)
+        self.assertEqual(message.sender, self.user)
+        self.assertEqual(message.receiver, booking.owner)
+        self.assertEqual(message.message, "Payment approved. Booking confirmed.")
+
+    def test_admin_can_reject_payment_and_request_new_receipt(self):
+        self.make_user_staff()
+        booking = self.create_booking_request(
+            reference="BK-PAY003",
+            progress="payment_verification",
+            amount_paid=4000,
+            total_cost=4000,
+        )
+        booking.approved_payment = True
+        booking.save(update_fields=["approved_payment"])
+
+        response = self.client.post(
+            reverse("verify_booking_payment", args=["BK-PAY003"]),
+            {"decision": "reject"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["success"])
+        booking.refresh_from_db()
+        self.assertEqual(booking.progress, "waiting_for_payment")
+        self.assertFalse(booking.approved_payment)
+
+        message = ChatMessage.objects.latest("id")
+        self.assertEqual(message.booking_request, booking)
+        self.assertEqual(message.sender, self.user)
+        self.assertEqual(message.receiver, booking.owner)
+        self.assertEqual(message.message, "Payment proof rejected. Please upload a new receipt for verification.")

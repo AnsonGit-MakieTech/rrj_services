@@ -2914,6 +2914,7 @@ body.modal-open {
 
 .quotation-actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 12px;
     margin-top: 17px;
 }
@@ -2930,6 +2931,14 @@ body.modal-open {
     height: 38px;
     padding: 0 15px;
     transition: background var(--motion-fast) ease, border-color var(--motion-fast) ease, transform var(--motion-fast) ease;
+}
+
+.decision-button:disabled,
+.admin-primary-action:disabled,
+.submit-payment:disabled,
+.admin-payment-actions button:disabled {
+    cursor: wait;
+    opacity: .72;
 }
 
 .decision-button svg {
@@ -3379,6 +3388,30 @@ body.modal-open {
     box-shadow: var(--shadow-brand);
 }
 
+.transaction-status {
+    color: var(--color-text-secondary);
+    font-size: 12px;
+    margin-top: 10px;
+}
+
+.quotation-actions .transaction-status {
+    flex: 0 0 100%;
+    margin-top: 0;
+}
+
+.admin-payment-actions .transaction-status {
+    flex: 0 0 100%;
+    margin-top: 0;
+}
+
+.transaction-status[data-type="success"] {
+    color: #047857;
+}
+
+.transaction-status[data-type="error"] {
+    color: #c33431;
+}
+
 .admin-payment-grid {
     display: grid;
     gap: 14px 28px;
@@ -3409,6 +3442,7 @@ body.modal-open {
 
 .admin-payment-actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 12px;
     margin-top: 16px;
 }

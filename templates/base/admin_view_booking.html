@@ -138,30 +138,7 @@
                     </section>
                     {% endif %}
 
-                    <section class="detail-panel messages-panel admin-messages-panel" data-booking-chat>
-                        <h2>Messages</h2>
-                        <div class="messages-box">
-                            <div class="messages-thread" role="log" aria-live="polite" aria-label="Booking messages" data-booking-messages>
-                                {% for chat_message in chat_messages %}
-                                <article class="chat-message {% if chat_message.is_own %}is-own{% else %}is-other{% endif %}" data-message-id="{{ chat_message.id }}">
-                                    <strong>{{ chat_message.sender_label }}</strong>
-                                    <p>{{ chat_message.message }}</p>
-                                    <time datetime="{{ chat_message.created_at_iso }}">{{ chat_message.created_at }}</time>
-                                </article>
-                                {% endfor %}
-                                <p class="messages-empty" data-booking-messages-empty {% if chat_messages %}hidden{% endif %}>No messages yet. Start a conversation with the customer.</p>
-                            </div>
-                            <form class="message-compose" action="{{ messages_endpoint }}" method="post" data-booking-message-form>
-                                {% csrf_token %}
-                                <label class="sr-only" for="admin-message">Type a message</label>
-                                <input id="admin-message" name="message" type="text" placeholder="Type a message..." autocomplete="off" required data-booking-message-input>
-                                <button type="submit" aria-label="Send message" data-booking-message-submit>
-                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7Z"/></svg>
-                                </button>
-                                <p class="message-compose-status" aria-live="polite" data-booking-message-status hidden></p>
-                            </form>
-                        </div>
-                    </section>
+                    {% include "base/includes/booking_messages_panel.html" with messages_panel_class="admin-messages-panel" message_input_id="admin-message" messages_empty_text="No messages yet. Start a conversation with the customer." %}
                 </div>
 
                 <aside class="detail-panel progress-panel">

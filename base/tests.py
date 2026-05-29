@@ -4,7 +4,6 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
-from unittest.mock import patch
 
 from base.models import BookingRequest, ChatMessage, Service
 
@@ -648,30 +647,46 @@ class ManageBookingApiTests(AuthenticatedPageTestCase):
 
 
 class ViewBookingPageTests(AuthenticatedPageTestCase):
-    def test_detail_page_renders_simulated_workflow_state(self):
-        response = self.client.get(reverse("view_booking", args=["BK-MPL5LPV3"]))
+    def test_detail_page_renders_database_workflow_state(self):
+        self.create_booking_request(
+            reference="BK-DETAIL001",
+            service_name="Carpentry",
+            progress="pending_quotation",
+        )
+
+        response = self.client.get(reverse("view_booking", args=["BK-DETAIL001"]))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "BK-MPL5LPV3")
+        self.assertContains(response, "BK-DETAIL001")
         self.assertContains(response, "Carpentry")
         self.assertContains(response, "Pending Quotation")
         self.assertContains(response, "Progress")
         self.assertContains(response, "Messages")
 
-    def test_quotation_sent_simulation_displays_decision_actions(self):
-        with patch("base.views.SIMULATED_VIEW_BOOKING_STATUS", "quotation_sent"):
-            response = self.client.get(reverse("view_booking", args=["BK-MPL5LPV3"]))
+    def test_quotation_sent_booking_displays_decision_actions(self):
+        self.create_booking_request(
+            reference="BK-DETAIL002",
+            progress="quotation_sent",
+            total_cost=4000,
+        )
+
+        response = self.client.get(reverse("view_booking", args=["BK-DETAIL002"]))
 
         self.assertContains(response, "Quotation Sent")
         self.assertContains(response, "Accept")
         self.assertContains(response, "Reject")
-        self.assertContains(response, reverse("decide_booking_quotation", args=["BK-MPL5LPV3"]))
+        self.assertContains(response, reverse("decide_booking_quotation", args=["BK-DETAIL002"]))
         self.assertContains(response, "data-booking-transaction-form")
         self.assertContains(response, "js/booking_transactions.")
 
-    def test_waiting_payment_simulation_displays_payment_form(self):
-        with patch("base.views.SIMULATED_VIEW_BOOKING_STATUS", "waiting_for_payment"):
-            response = self.client.get(reverse("view_booking", args=["BK-MPL5LPV3"]))
+    def test_waiting_payment_booking_displays_payment_form(self):
+        self.create_booking_request(
+            reference="BK-DETAIL003",
+            progress="waiting_for_payment",
+            total_cost=4000,
+        )
+
+        response = self.client.get(reverse("view_booking", args=["BK-DETAIL003"]))
 
         self.assertContains(response, "Waiting for Payment")
         self.assertContains(response, "Upload Payment Proof")
@@ -679,9 +694,14 @@ class ViewBookingPageTests(AuthenticatedPageTestCase):
         self.assertContains(response, "data-receipt-input")
         self.assertContains(response, 'type="file" name="receipt"')
         self.assertContains(response, 'name="payment_reference_number"')
-        self.assertContains(response, reverse("submit_booking_payment", args=["BK-MPL5LPV3"]))
+        self.assertContains(response, reverse("submit_booking_payment", args=["BK-DETAIL003"]))
         self.assertContains(response, "data-booking-transaction-form")
         self.assertContains(response, "Submit Payment")
+
+    def test_detail_page_404s_when_booking_is_missing(self):
+        response = self.client.get(reverse("view_booking", args=["BK-MISSING"]))
+
+        self.assertEqual(response.status_code, 404)
 
 
 class BookingMessagingTests(AuthenticatedPageTestCase):

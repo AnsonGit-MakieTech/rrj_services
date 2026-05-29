@@ -13,6 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js" defer></script>
     <script src="{% static 'js/dashboard-charts.js' %}" defer></script>
     <script src="{% static 'js/home.js' %}" defer></script>
+    <script src="{% static 'js/admin.js' %}" defer></script>
 </head>
 <body class="admin-dashboard-page">
     {% include "base/includes/header.html" %}
@@ -88,19 +89,12 @@
                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
                         </button>
                         <div class="admin-status-options" id="admin-status-options" role="listbox" aria-labelledby="admin-status-label" data-admin-status-options hidden>
-                            <button class="admin-status-option" type="button" role="option" aria-selected="true" data-admin-status-option="">
-                                <span>All Statuses</span>
+                            {% for option in admin_status_options %}
+                            <button class="admin-status-option" type="button" role="option" aria-selected="{% if not option.value %}true{% else %}false{% endif %}" data-admin-status-option="{{ option.value }}">
+                                <span>{{ option.label }}</span>
                                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
                             </button>
-                            <button class="admin-status-option" type="button" role="option" aria-selected="false" data-admin-status-option="Pending Quotation"><span>Pending Quotation</span></button>
-                            <button class="admin-status-option" type="button" role="option" aria-selected="false" data-admin-status-option="Quotation Sent"><span>Quotation Sent</span></button>
-                            <button class="admin-status-option" type="button" role="option" aria-selected="false" data-admin-status-option="Waiting for Payment"><span>Waiting for Payment</span></button>
-                            <button class="admin-status-option" type="button" role="option" aria-selected="false" data-admin-status-option="Payment Verification"><span>Payment Verification</span></button>
-                            <button class="admin-status-option" type="button" role="option" aria-selected="false" data-admin-status-option="Booking Confirmed"><span>Booking Confirmed</span></button>
-                            <button class="admin-status-option" type="button" role="option" aria-selected="false" data-admin-status-option="Scheduled"><span>Scheduled</span></button>
-                            <button class="admin-status-option" type="button" role="option" aria-selected="false" data-admin-status-option="In Progress"><span>In Progress</span></button>
-                            <button class="admin-status-option" type="button" role="option" aria-selected="false" data-admin-status-option="Completed"><span>Completed</span></button>
-                            <button class="admin-status-option" type="button" role="option" aria-selected="false" data-admin-status-option="Cancelled"><span>Cancelled</span></button>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
@@ -131,6 +125,10 @@
                                         View
                                     </a>
                                 </td>
+                            </tr>
+                            {% empty %}
+                            <tr class="admin-empty">
+                                <td colspan="6">No booking requests received yet.</td>
                             </tr>
                             {% endfor %}
                             <tr class="admin-empty" data-admin-empty hidden>

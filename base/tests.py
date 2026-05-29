@@ -25,6 +25,42 @@ class AuthenticatedPageTestCase(TestCase):
         self.user.save(update_fields=["is_staff"])
         self.client.force_login(self.user)
 
+    def create_booking_request(
+        self,
+        reference="BK-TEST0001",
+        owner=None,
+        service_name="Wall Repair",
+        full_name="Customer One",
+        progress="pending_quotation",
+        amount_paid=0,
+        material_cost=0,
+        labor_cost=0,
+        total_cost=0,
+    ):
+        if owner is None:
+            owner = self.user
+        service = Service.objects.create(name=service_name)
+        return BookingRequest.objects.create(
+            owner=owner,
+            service=service,
+            reference_number=reference,
+            full_name=full_name,
+            email="customer@example.com",
+            contact_number="09123456789",
+            full_address="Manila",
+            project_location="Makati",
+            square_meters=24,
+            urgency_level="high",
+            service_description="Service scope",
+            problem_description="Project notes",
+            progress=progress,
+            amount_paid=amount_paid,
+            material_cost=material_cost,
+            labor_cost=labor_cost,
+            total_cost=total_cost,
+            transaction_notes="Admin quotation notes",
+        )
+
 
 class HomePageTests(AuthenticatedPageTestCase):
     def test_home_page_renders_customer_dashboard_content(self):
@@ -146,28 +182,63 @@ class PageProtectionTests(TestCase):
 class AdminDashboardPageTests(AuthenticatedPageTestCase):
     def test_admin_dashboard_renders_metrics_charts_and_bookings_for_staff(self):
         self.make_user_staff()
+        User = get_user_model()
+        customer = User.objects.create_user(
+            username="639555000001",
+            password=None,
+            full_name="Maria Customer",
+            contact_number="639555000001",
+        )
+        self.create_booking_request(
+            reference="BK-REAL0001",
+            owner=customer,
+            service_name="Kitchen Renovation",
+            full_name="Maria Customer",
+            progress="pending_quotation",
+        )
+        self.create_booking_request(
+            reference="BK-REAL0002",
+            owner=customer,
+            service_name="Roof Repair",
+            full_name="Maria Customer",
+            progress="completed",
+            amount_paid=5000,
+        )
+
         response = self.client.get(reverse("admin_dashboard"))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Admin Dashboard")
         self.assertContains(response, "Total Bookings")
-        self.assertContains(response, "PHP 6,877")
+        self.assertContains(response, "Active Jobs")
+        self.assertContains(response, "PHP 5,000")
         self.assertContains(response, "Monthly Bookings")
         self.assertContains(response, "Most Requested Services")
         self.assertContains(response, "data-admin-monthly-chart")
         self.assertContains(response, "data-admin-service-chart")
         self.assertContains(response, "admin-monthly-chart-data")
         self.assertContains(response, "chart.js@4.5.0")
-        self.assertContains(response, "BK-MPNPN4DR")
-        self.assertContains(response, "Erijerehua Guaguitin")
+        self.assertContains(response, "BK-REAL0001")
+        self.assertContains(response, "Maria Customer")
+        self.assertContains(response, "Kitchen Renovation")
         self.assertContains(response, "data-admin-search")
         self.assertContains(response, "data-admin-status-select")
         self.assertContains(response, "Quotation Sent")
         self.assertContains(response, "Payment Verification")
         self.assertContains(response, "In Progress")
+        self.assertContains(response, "js/admin.")
         self.assertContains(response, "site-header-admin")
         self.assertContains(response, f'class="active" href="{reverse("admin_dashboard")}"')
-        self.assertContains(response, reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
+        self.assertContains(response, reverse("admin_view_booking", args=["BK-REAL0001"]))
+
+    def test_admin_dashboard_empty_state_uses_real_booking_table(self):
+        self.make_user_staff()
+
+        response = self.client.get(reverse("admin_dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "No booking requests received yet.")
+        self.assertContains(response, "PHP 0")
 
     def test_admin_dashboard_is_not_available_for_customer(self):
         response = self.client.get(reverse("admin_dashboard"))
@@ -178,8 +249,13 @@ class AdminDashboardPageTests(AuthenticatedPageTestCase):
 class AdminViewBookingPageTests(AuthenticatedPageTestCase):
     def test_confirmed_booking_renders_admin_controls_for_staff(self):
         self.make_user_staff()
-        with patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "booking_confirmed"):
-            response = self.client.get(reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
+        self.create_booking_request(
+            reference="BK-ADMIN001",
+            service_name="Shower Enclosure Install",
+            full_name="Erijerehua Guaguitin",
+            progress="booking_confirmed",
+        )
+        response = self.client.get(reverse("admin_view_booking", args=["BK-ADMIN001"]))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Shower Enclosure Install")
@@ -193,8 +269,8 @@ class AdminViewBookingPageTests(AuthenticatedPageTestCase):
 
     def test_pending_quotation_simulation_displays_quotation_form(self):
         self.make_user_staff()
-        with patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "pending_quotation"):
-            response = self.client.get(reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
+        self.create_booking_request(reference="BK-ADMIN002", progress="pending_quotation")
+        response = self.client.get(reverse("admin_view_booking", args=["BK-ADMIN002"]))
 
         self.assertContains(response, "Pending Quotation")
         self.assertContains(response, "Send Quotation")
@@ -206,18 +282,23 @@ class AdminViewBookingPageTests(AuthenticatedPageTestCase):
 
     def test_payment_verification_simulation_displays_review_actions(self):
         self.make_user_staff()
-        with patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "payment_verification"):
-            response = self.client.get(reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
+        self.create_booking_request(
+            reference="BK-ADMIN003",
+            progress="payment_verification",
+            amount_paid=1200,
+            total_cost=1200,
+        )
+        response = self.client.get(reverse("admin_view_booking", args=["BK-ADMIN003"]))
 
         self.assertContains(response, "Payment Verification")
         self.assertContains(response, "Approve Payment")
         self.assertContains(response, "Reject Payment")
-        self.assertContains(response, "Customer payment receipt")
+        self.assertContains(response, "PHP 1,200")
 
     def test_scheduled_simulation_only_displays_remaining_status_actions(self):
         self.make_user_staff()
-        with patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "scheduled"):
-            response = self.client.get(reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
+        self.create_booking_request(reference="BK-ADMIN004", progress="scheduled")
+        response = self.client.get(reverse("admin_view_booking", args=["BK-ADMIN004"]))
 
         self.assertContains(response, "Update Status")
         self.assertContains(response, "In Progress")
@@ -226,8 +307,8 @@ class AdminViewBookingPageTests(AuthenticatedPageTestCase):
 
     def test_in_progress_simulation_only_displays_completed_action(self):
         self.make_user_staff()
-        with patch("base.views.SIMULATED_ADMIN_BOOKING_STATUS", "in_progress"):
-            response = self.client.get(reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
+        self.create_booking_request(reference="BK-ADMIN005", progress="in_progress")
+        response = self.client.get(reverse("admin_view_booking", args=["BK-ADMIN005"]))
 
         self.assertContains(response, "Update Status")
         self.assertContains(response, '<button type="button">Completed</button>')
@@ -236,13 +317,15 @@ class AdminViewBookingPageTests(AuthenticatedPageTestCase):
 
     def test_existing_completed_dashboard_booking_keeps_its_status(self):
         self.make_user_staff()
-        response = self.client.get(reverse("admin_view_booking", args=["BK-MPNJET1G"]))
+        self.create_booking_request(reference="BK-ADMIN006", progress="completed")
+        response = self.client.get(reverse("admin_view_booking", args=["BK-ADMIN006"]))
 
         self.assertContains(response, "Completed")
         self.assertNotContains(response, "Update Status")
 
     def test_admin_booking_page_is_not_available_for_customer(self):
-        response = self.client.get(reverse("admin_view_booking", args=["BK-MPNPN4DR"]))
+        self.create_booking_request(reference="BK-ADMIN007")
+        response = self.client.get(reverse("admin_view_booking", args=["BK-ADMIN007"]))
 
         self.assertEqual(response.status_code, 404)
 

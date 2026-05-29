@@ -1,57 +1,12 @@
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import redirect, render
+from apis.admin_dashboard import get_admin_booking_detail, get_admin_dashboard_context
 from apis.authentications import api_login, api_register, logout_page
 from apis.manage_booking import create_booking
 from apis.manage_service import create_service, delete_service, toggle_service_status, update_service
 from base.models import BookingRequest, Service
-from apis.manage_booking import *
 
-
-ADMIN_STATS = [
-    {"label": "Total Bookings", "value": "11", "kind": "bookings"},
-    {"label": "Pending Quotations", "value": "1", "kind": "pending"},
-    {"label": "Active Services", "value": "1", "kind": "active"},
-    {"label": "Revenue", "value": "PHP 6,877", "kind": "revenue"},
-]
-
-ADMIN_BOOKINGS = [
-    {"reference": "BK-MPNPN4DR", "customer": "Erijerehua Guaguitin", "service": "Shower Enclosure Install", "status": "Booking Confirmed", "status_kind": "confirmed", "date": "May 27, 2026"},
-    {"reference": "BK-MPNJET1G", "customer": "Makie Tech", "service": "Glass Door Install", "status": "Completed", "status_kind": "completed", "date": "May 27, 2026"},
-    {"reference": "BK-MPL6A5T9", "customer": "Sarim Bandoquillo", "service": "Re Painting", "status": "Completed", "status_kind": "completed", "date": "May 25, 2026"},
-    {"reference": "BK-MPL5LPV3", "customer": "Makie Tech", "service": "Carpentry", "status": "Cancelled", "status_kind": "cancelled", "date": "May 25, 2026"},
-    {"reference": "BK-MPKPRA6C", "customer": "Makie Tech", "service": "Esculpture Maker", "status": "Booking Confirmed", "status_kind": "confirmed", "date": "May 25, 2026"},
-    {"reference": "BK-MPKL43WI", "customer": "Sarim Bandoquillo", "service": "Tiles Sitter", "status": "Completed", "status_kind": "completed", "date": "May 25, 2026"},
-    {"reference": "BK-MPJYQAK1", "customer": "Sallo Uno", "service": "Re Painting", "status": "Completed", "status_kind": "completed", "date": "May 24, 2026"},
-    {"reference": "BK-MPJXPK6K", "customer": "Sallo Uno", "service": "Re Painting", "status": "Completed", "status_kind": "completed", "date": "May 24, 2026"},
-    {"reference": "BK-MPJWQ0SE", "customer": "Sallo Uno", "service": "Re Painting", "status": "Pending Quotation", "status_kind": "pending", "date": "May 24, 2026"},
-    {"reference": "BK-MPJW2JFC", "customer": "Sallo Uno", "service": "Re Painting", "status": "Completed", "status_kind": "completed", "date": "May 24, 2026"},
-    {"reference": "BK-MPJVLI78", "customer": "Sallo Uno", "service": "Re Painting", "status": "Completed", "status_kind": "completed", "date": "May 24, 2026"},
-]
-
-ADMIN_BOOKING_DETAILS = {
-    "BK-MPNPN4DR": {
-        "email": "astigpree@gmail.com",
-        "phone": "0282822",
-        "location": "fb vm",
-        "sqm": "4646",
-        "urgency": "High",
-        "schedule": "2026-05-27",
-        "description": "bddbdb",
-        "quotation": {
-            "materials": "PHP 232",
-            "labor": "PHP 32",
-            "total": "PHP 323",
-            "notes": "fdsafdds",
-        },
-        "payment": {
-            "amount": "PHP 56",
-            "method": "Bank Transfer",
-            "reference": "gbfb",
-            "receipt_url": "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=640&q=80",
-        },
-    },
-}
 
 BOOKINGS = [
     {
@@ -101,12 +56,6 @@ BOOKINGS = [
 # payment_verification, booking_confirmed, scheduled, in_progress, completed,
 # cancelled.
 SIMULATED_VIEW_BOOKING_STATUS = "payment_verification"
-
-# Change this value and refresh an admin booking detail page to preview its workflow.
-# Available values: pending_quotation, quotation_sent, waiting_for_payment,
-# payment_verification, booking_confirmed, scheduled, in_progress, completed.
-SIMULATED_ADMIN_BOOKING_STATUS = "completed"
-SIMULATED_ADMIN_BOOKING_REFERENCE = "BK-MPNPN4DR"
 
 PROGRESS_STEPS = [
     "Pending Quotation",
@@ -304,19 +253,8 @@ def _simulated_state():
     )
 
 
-def _simulated_admin_state():
-    return ADMIN_BOOKING_STATES.get(
-        SIMULATED_ADMIN_BOOKING_STATUS,
-        ADMIN_BOOKING_STATES["pending_quotation"],
-    )
-
-
-def _admin_state_for_booking(booking):
-    if booking["reference"] == SIMULATED_ADMIN_BOOKING_REFERENCE:
-        return _simulated_admin_state()
-
-    state_name = booking["status"].lower().replace(" ", "_")
-    return ADMIN_BOOKING_STATES.get(state_name, ADMIN_BOOKING_STATES["pending_quotation"])
+def _admin_state_for_progress(progress):
+    return ADMIN_BOOKING_STATES.get(progress, ADMIN_BOOKING_STATES["pending_quotation"])
 
 
 def _progress_steps(state):
@@ -397,77 +335,6 @@ def _bookings_for_dashboard(user=None):
     return bookings
 
 
-def _admin_bookings_for_dashboard():
-    state = _simulated_admin_state()
-    bookings = [booking.copy() for booking in ADMIN_BOOKINGS]
-    for booking in bookings:
-        if booking["reference"] == SIMULATED_ADMIN_BOOKING_REFERENCE:
-            booking["status"] = state["label"]
-            booking["status_kind"] = state["status_kind"]
-    return bookings
-
-
-def _admin_chart_data(bookings):
-    monthly_counts = {}
-    service_counts = {}
-
-    for booking in reversed(bookings):
-        month = booking["date"].split(" ", 1)[0]
-        monthly_counts[month] = monthly_counts.get(month, 0) + 1
-        service = booking["service"]
-        service_counts[service] = service_counts.get(service, 0) + 1
-
-    monthly_items = [{"label": label, "value": value} for label, value in monthly_counts.items()]
-    service_items = [
-        {"label": label, "value": value}
-        for label, value in sorted(service_counts.items(), key=lambda item: (-item[1], item[0]))
-    ]
-    return (
-        {
-            "labels": [item["label"] for item in monthly_items],
-            "values": [item["value"] for item in monthly_items],
-            "items": monthly_items,
-        },
-        {
-            "labels": [item["label"] for item in service_items],
-            "values": [item["value"] for item in service_items],
-            "items": service_items,
-        },
-    )
-
-
-def _admin_booking_detail(reference):
-    booking = next((row.copy() for row in ADMIN_BOOKINGS if row["reference"] == reference), None)
-    if booking is None:
-        return None
-
-    booking.update(
-        {
-            "email": "-",
-            "phone": "-",
-            "location": "-",
-            "sqm": "-",
-            "urgency": "Standard",
-            "schedule": booking["date"],
-            "description": "",
-            "quotation": {
-                "materials": "PHP 0",
-                "labor": "PHP 0",
-                "total": "PHP 0",
-                "notes": "Quotation details will appear here.",
-            },
-            "payment": {
-                "amount": "PHP 0",
-                "method": "-",
-                "reference": "-",
-                "receipt_url": "",
-            },
-        }
-    )
-    booking.update(ADMIN_BOOKING_DETAILS.get(reference, {}))
-    return booking
-
-
 def _display_name(request):
     if request.user.is_authenticated:
         return getattr(request.user, "full_name", "") or request.user.get_full_name() or request.user.username
@@ -532,20 +399,18 @@ def admin_dashboard(request):
     if not _is_admin(request):
         raise Http404("Admin dashboard not available")
 
-    bookings = _admin_bookings_for_dashboard()
-    monthly_chart, service_chart = _admin_chart_data(bookings)
-    return render(
-        request,
-        "base/admin.html",
+    dashboard_context = get_admin_dashboard_context()
+    dashboard_context.update(
         {
             "active_page": "admin",
             "display_name": _display_name(request),
             "is_admin": True,
-            "admin_stats": ADMIN_STATS,
-            "admin_bookings": bookings,
-            "admin_monthly_chart": monthly_chart,
-            "admin_service_chart": service_chart,
-        },
+        }
+    )
+    return render(
+        request,
+        "base/admin.html",
+        dashboard_context,
     )
 
 
@@ -554,11 +419,11 @@ def admin_view_booking(request, reference):
     if not _is_admin(request):
         raise Http404("Admin booking not available")
 
-    booking = _admin_booking_detail(reference)
+    booking = get_admin_booking_detail(reference)
     if booking is None:
         raise Http404("Booking not found")
 
-    state = _admin_state_for_booking(booking)
+    state = _admin_state_for_progress(booking["progress_key"])
     booking["status"] = state["label"]
 
     return render(

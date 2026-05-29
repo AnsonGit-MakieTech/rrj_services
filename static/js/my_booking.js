@@ -50,10 +50,14 @@
     }
 
     function setCardVisibility(element, shouldShow) {
+        if (!element) {
+            return;
+        }
+
         window.clearTimeout(element.filterTimer);
 
         if (shouldShow) {
-            const shouldReveal = element.classList.contains("is-filter-hidden") || element.classList.contains("is-filter-leaving");
+            const shouldReveal = element.classList.contains("is-filter-hidden");
             element.classList.remove("is-filter-hidden", "is-filter-leaving");
             if (shouldReveal) {
                 animateFilterReveal(element);
@@ -61,23 +65,12 @@
             return;
         }
 
-        if (element.classList.contains("is-filter-hidden") || element.classList.contains("is-filter-leaving")) {
+        if (element.classList.contains("is-filter-hidden")) {
             return;
         }
 
-        element.classList.remove("is-filter-revealing");
-        if (reducedMotion.matches) {
-            element.classList.add("is-filter-hidden");
-            return;
-        }
-
-        element.classList.add("is-filter-leaving");
-        element.filterTimer = window.setTimeout(function () {
-            if (element.classList.contains("is-filter-leaving")) {
-                element.classList.add("is-filter-hidden");
-                element.classList.remove("is-filter-leaving");
-            }
-        }, 160);
+        element.classList.remove("is-filter-revealing", "is-filter-leaving");
+        element.classList.add("is-filter-hidden");
     }
 
     function setEmptyVisibility(element, shouldShow) {

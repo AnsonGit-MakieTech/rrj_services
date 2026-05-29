@@ -3,9 +3,6 @@
     const accountMenu = document.querySelector("[data-account-menu]");
     const navToggle = document.querySelector("[data-nav-toggle]");
     const mobileNavigation = document.querySelector("[data-mobile-navigation]");
-    const serviceSearch = document.querySelector("[data-service-search]");
-    const serviceCards = document.querySelectorAll("[data-service-card]");
-    const emptyServices = document.querySelector("[data-empty-services]");
     const paymentSelect = document.querySelector("[data-payment-select]");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -30,52 +27,6 @@
             if (element.classList.contains("is-closing")) {
                 element.hidden = true;
                 element.classList.remove("is-closing");
-            }
-        }, 160);
-    }
-
-    function animateFilterReveal(element) {
-        if (reducedMotion.matches) {
-            return;
-        }
-
-        element.classList.remove("is-filter-revealing");
-        window.requestAnimationFrame(function () {
-            element.classList.add("is-filter-revealing");
-        });
-        element.addEventListener("animationend", function () {
-            element.classList.remove("is-filter-revealing");
-        }, {once: true});
-    }
-
-    function setFilteredVisibility(element, shouldShow) {
-        window.clearTimeout(element.filterTimer);
-
-        if (shouldShow) {
-            const shouldReveal = element.hidden || element.classList.contains("is-filter-leaving");
-            element.hidden = false;
-            element.classList.remove("is-filter-leaving");
-            if (shouldReveal) {
-                animateFilterReveal(element);
-            }
-            return;
-        }
-
-        if (element.hidden || element.classList.contains("is-filter-leaving")) {
-            return;
-        }
-
-        element.classList.remove("is-filter-revealing");
-        if (reducedMotion.matches) {
-            element.hidden = true;
-            return;
-        }
-
-        element.classList.add("is-filter-leaving");
-        element.filterTimer = window.setTimeout(function () {
-            if (element.classList.contains("is-filter-leaving")) {
-                element.hidden = true;
-                element.classList.remove("is-filter-leaving");
             }
         }, 160);
     }
@@ -132,23 +83,6 @@
     mobileNavigation.querySelectorAll("a").forEach(function (link) {
         link.addEventListener("click", closeMobileNavigation);
     });
-
-    if (serviceSearch) {
-        serviceSearch.addEventListener("input", function () {
-            const query = serviceSearch.value.toLowerCase().trim();
-            let matches = 0;
-
-            serviceCards.forEach(function (card) {
-                const isMatch = card.dataset.search.toLowerCase().includes(query);
-                setFilteredVisibility(card, isMatch);
-                if (isMatch) {
-                    matches += 1;
-                }
-            });
-
-            setFilteredVisibility(emptyServices, matches === 0);
-        });
-    }
 
     if (paymentSelect) {
         const selectToggle = paymentSelect.querySelector("[data-payment-select-toggle]");

@@ -928,6 +928,11 @@ svg {
     height: 341px;
 }
 
+.catalog-grid .service-card.is-filter-hidden,
+.empty-services.is-filter-hidden {
+    display: none;
+}
+
 .empty-services {
     color: var(--color-text-secondary);
     font-weight: 500;

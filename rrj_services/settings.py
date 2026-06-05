@@ -33,6 +33,7 @@ DEBUG = os.getenv('DEBUG') == 'True'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
 
 CSRF_TRUSTED_ORIGINS = [
+    "https://rrjservices.pythonanywhere.com",
     "https://rrjservices.masbate.top",
 ]
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

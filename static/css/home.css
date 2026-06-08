@@ -4921,23 +4921,27 @@ body.modal-open {
 
     .admin-table th,
     .admin-table td {
-        padding: 0 16px;
+        padding: 0;
     }
 
     .admin-table th:first-child,
     .admin-table td:first-child {
-        width: 112px;
+        padding-left: 12px;
+        padding-right: 6px;
+        width: 32%;
     }
 
     .admin-table th:nth-child(4),
     .admin-table td:nth-child(4) {
-        padding-left: 1px;
-        width: 176px;
+        padding-left: 4px;
+        padding-right: 4px;
+        width: 49%;
     }
 
     .admin-table .admin-action-column {
-        padding-right: 23px;
-        width: 70px;
+        padding-left: 4px;
+        padding-right: 8px;
+        width: 19%;
     }
 
     .admin-wide-column {

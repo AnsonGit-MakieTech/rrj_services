@@ -5,7 +5,24 @@
         const submitButton = form.querySelector(".auth-submit");
         const submitLabel = form.querySelector("[data-auth-submit-label]");
         const message = form.querySelector("[data-auth-message]");
+        const uppercaseNameInputs = form.querySelectorAll("[data-uppercase-name]");
         const defaultLabel = submitLabel ? submitLabel.textContent : "Submit";
+
+        function uppercaseName(input) {
+            const selectionStart = input.selectionStart;
+            const selectionEnd = input.selectionEnd;
+            input.value = input.value.toUpperCase();
+
+            if (selectionStart !== null && selectionEnd !== null) {
+                input.setSelectionRange(selectionStart, selectionEnd);
+            }
+        }
+
+        uppercaseNameInputs.forEach(function (input) {
+            input.addEventListener("input", function () {
+                uppercaseName(input);
+            });
+        });
 
         function setLoading(isLoading) {
             submitButton.disabled = isLoading;
@@ -34,6 +51,7 @@
                 return;
             }
 
+            uppercaseNameInputs.forEach(uppercaseName);
             setLoading(true);
             if (message) {
                 message.hidden = true;

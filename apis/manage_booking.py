@@ -2,6 +2,8 @@ import secrets
 import string
 from pathlib import Path
 
+from django.conf import settings
+from django.core.cache import cache
 from django.db import transaction
 from django.http import JsonResponse
 from django.urls import reverse
@@ -23,6 +25,10 @@ def create_booking(request):
             {"success": False, "message": "Please login before creating a booking."},
             status=401,
         )
+
+    rate_limit_response = _check_booking_rate_limit(request)
+    if rate_limit_response:
+        return rate_limit_response
 
     service = Service.objects.filter(
         pk=request.POST.get("service_id"),
@@ -85,6 +91,37 @@ def create_booking(request):
         },
         status=201,
     )
+
+
+def _check_booking_rate_limit(request):
+    request_limit = settings.BOOKING_RATE_LIMIT_REQUESTS
+    window_seconds = settings.BOOKING_RATE_LIMIT_WINDOW_SECONDS
+    cache_key = f"booking-create-rate-limit:user:{request.user.pk}"
+
+    if cache.add(cache_key, 1, timeout=window_seconds):
+        request_count = 1
+    else:
+        try:
+            request_count = cache.incr(cache_key)
+        except ValueError:
+            cache.set(cache_key, 1, timeout=window_seconds)
+            request_count = 1
+
+    remaining = max(request_limit - request_count, 0)
+    if request_count <= request_limit:
+        return None
+
+    response = JsonResponse(
+        {
+            "success": False,
+            "message": "Too many booking requests. Please try again later.",
+        },
+        status=429,
+    )
+    response["Retry-After"] = str(window_seconds)
+    response["X-RateLimit-Limit"] = str(request_limit)
+    response["X-RateLimit-Remaining"] = str(remaining)
+    return response
 
 
 def _generate_reference_number():

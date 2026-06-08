@@ -8,7 +8,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 def api_login(request):
-    full_name = request.POST.get("full_name", "").strip()
+    full_name = _normalize_full_name(request.POST.get("full_name", ""))
     contact_number = _normalize_contact_number(request.POST.get("contact_number", ""))
 
     if not full_name or not contact_number:
@@ -28,7 +28,7 @@ def api_login(request):
     return JsonResponse({"success": True, "redirect_url": _redirect_url(request)})
 
 def api_register(request):
-    full_name = request.POST.get("full_name", "").strip()
+    full_name = _normalize_full_name(request.POST.get("full_name", ""))
     contact_number = _normalize_contact_number(request.POST.get("contact_number", ""))
 
     if not full_name or not contact_number:
@@ -70,10 +70,14 @@ api_register = require_POST(api_register)
 def _find_user(full_name, contact_number):
     User = get_user_model()
     for user in User.objects.filter(contact_number=contact_number):
-        stored_name = (getattr(user, "full_name", "") or user.get_full_name()).strip()
-        if stored_name.casefold() == full_name.casefold():
+        stored_name = getattr(user, "full_name", "") or user.get_full_name()
+        if _normalize_full_name(stored_name) == full_name:
             return user
     return None
+
+
+def _normalize_full_name(value):
+    return " ".join((value or "").split()).upper()
 
 
 def _normalize_contact_number(value):

@@ -2917,6 +2917,17 @@ body.modal-open {
     line-height: 1.25;
 }
 
+.booking-summary-note {
+    background: #f5f3ff;
+    border-left: 3px solid var(--color-brand-violet);
+    border-radius: 6px;
+    color: #526176;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 18px 0 0;
+    padding: 10px 12px;
+}
+
 .detail-status {
     background: #f2ebff;
     border-radius: 20px;

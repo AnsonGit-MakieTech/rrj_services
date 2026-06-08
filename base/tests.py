@@ -1,6 +1,7 @@
 import shutil
 import tempfile
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -110,6 +111,8 @@ class AuthenticationPageTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Login to your account")
         self.assertContains(response, 'name="full_name"')
+        self.assertContains(response, "data-uppercase-name")
+        self.assertContains(response, 'autocapitalize="characters"')
         self.assertContains(response, 'name="contact_number"')
         self.assertNotContains(response, 'type="password"')
         self.assertContains(response, reverse("register"))
@@ -120,6 +123,8 @@ class AuthenticationPageTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Create an account")
         self.assertContains(response, 'name="full_name"')
+        self.assertContains(response, "data-uppercase-name")
+        self.assertContains(response, 'autocapitalize="characters"')
         self.assertContains(response, 'name="contact_number"')
         self.assertNotContains(response, 'type="password"')
         self.assertContains(response, reverse("login"))
@@ -166,7 +171,9 @@ class AuthenticationApiTests(TestCase):
         User = get_user_model()
         self.assertTrue(
             User.objects.filter(
-                full_name="Juan Dela Cruz",
+                full_name="JUAN DELA CRUZ",
+                first_name="JUAN",
+                last_name="DELA CRUZ",
                 contact_number="639123456789",
             ).exists()
         )
@@ -667,6 +674,8 @@ class AddBookingPageTests(AuthenticatedPageTestCase):
 class ManageBookingApiTests(AuthenticatedPageTestCase):
     def setUp(self):
         super().setUp()
+        cache.clear()
+        self.addCleanup(cache.clear)
         self.media_root = tempfile.mkdtemp()
         self.media_override = self.settings(MEDIA_ROOT=self.media_root)
         self.media_override.enable()
@@ -746,6 +755,35 @@ class ManageBookingApiTests(AuthenticatedPageTestCase):
         self.assertFalse(response.json()["success"])
         self.assertEqual(BookingRequest.objects.count(), 0)
 
+    @override_settings(
+        BOOKING_RATE_LIMIT_REQUESTS=3,
+        BOOKING_RATE_LIMIT_WINDOW_SECONDS=3600,
+    )
+    def test_booking_api_rate_limits_fourth_request(self):
+        service = Service.objects.create(
+            name="Electrical Repair",
+            is_active=True,
+            status="available",
+        )
+        payload = {
+            "full_name": "Makie Tech",
+            "email": "techmakie@gmail.com",
+            "service_id": str(service.id),
+        }
+
+        for _ in range(3):
+            response = self.client.post(reverse("create_booking"), payload)
+            self.assertEqual(response.status_code, 201)
+
+        response = self.client.post(reverse("create_booking"), payload)
+
+        self.assertEqual(response.status_code, 429)
+        self.assertFalse(response.json()["success"])
+        self.assertEqual(response["Retry-After"], "3600")
+        self.assertEqual(response["X-RateLimit-Limit"], "3")
+        self.assertEqual(response["X-RateLimit-Remaining"], "0")
+        self.assertEqual(BookingRequest.objects.count(), 3)
+
 
 class ViewBookingPageTests(AuthenticatedPageTestCase):
     def test_detail_page_renders_database_workflow_state(self):
@@ -761,6 +799,10 @@ class ViewBookingPageTests(AuthenticatedPageTestCase):
         self.assertContains(response, "BK-DETAIL001")
         self.assertContains(response, "Carpentry")
         self.assertContains(response, "Pending Quotation")
+        self.assertContains(
+            response,
+            "Our customer service team will contact you soon via call or message.",
+        )
         self.assertContains(response, "Progress")
         self.assertContains(response, "Messages")
 

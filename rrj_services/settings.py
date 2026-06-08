@@ -54,6 +54,9 @@ AUTH_USER_MODEL = 'base.AuthenticatedUser'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home'
 
+BOOKING_RATE_LIMIT_REQUESTS = int(os.getenv('BOOKING_RATE_LIMIT_REQUESTS', '10'))
+BOOKING_RATE_LIMIT_WINDOW_SECONDS = int(os.getenv('BOOKING_RATE_LIMIT_WINDOW_SECONDS', '3600'))
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     # Whitenoise
